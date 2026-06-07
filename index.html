@@ -10,36 +10,25 @@
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:0}
 body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.screen{display:none}
-.screen.active{display:flex;flex-direction:column;min-height:100vh}
-
-/* BACKGROUNDS */
+.screen{display:none}.screen.active{display:flex;flex-direction:column;min-height:100vh}
 .landing-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('https://i.ibb.co/xqnRy8N8/toomas-tartes-Yizrl9-N-e-DA-unsplash.jpg') center center/cover no-repeat}
 .landing-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.3) 50%,rgba(0,15,5,0.7) 100%)}
 .app-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;display:none;background:url('https://i.ibb.co/JWqnJs8F/dharmendra-sahu-Ia2-Kjtrx8y4-unsplash.jpg') center center/cover no-repeat}
 .app-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.2) 40%,rgba(0,10,30,0.6) 100%)}
-
-/* GLASS */
 .glass{background:rgba(255,255,255,0.15);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.28);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
 .glass-strong{background:rgba(255,255,255,0.2);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.38);border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.2)}
-
-/* BUTTONS */
 .btn-primary{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(220,255,220,0.95));color:#2d5a27;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 20px rgba(255,255,255,0.25);transition:all 0.2s}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,255,255,0.35)}
+.btn-primary:hover{transform:translateY(-2px)}
 .btn-outline{width:100%;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,0.5);background:rgba(255,255,255,0.1);color:#fff;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:10px;transition:all 0.2s}
-.btn-outline:hover{background:rgba(255,255,255,0.2)}
-.btn-small{padding:8px 16px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-small{padding:7px 14px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s}
 .btn-green{background:rgba(127,255,127,0.2);color:#7fff7f;border:1px solid rgba(127,255,127,0.3)}
 .btn-red{background:rgba(255,100,100,0.2);color:#ff8877;border:1px solid rgba(255,100,100,0.3)}
-
-/* FORMS */
+.btn-blue{background:rgba(100,180,255,0.2);color:#88ccff;border:1px solid rgba(100,180,255,0.3)}
 .form-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px}
 .form-input{width:100%;padding:13px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-size:14px;font-family:'Nunito',sans-serif;color:#fff;background:rgba(255,255,255,0.12);outline:none;margin-bottom:14px;transition:all 0.2s}
 .form-input::placeholder{color:rgba(255,255,255,0.38)}
 .form-input:focus{border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.2)}
-.form-select{width:100%;padding:13px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-size:14px;font-family:'Nunito',sans-serif;color:#fff;background:rgba(30,60,30,0.8);outline:none;margin-bottom:14px}
-
-/* LANDING */
+.form-select{width:100%;padding:13px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-size:14px;font-family:'Nunito',sans-serif;color:#fff;background:rgba(20,50,30,0.9);outline:none;margin-bottom:14px}
 .landing{align-items:center;justify-content:flex-end;min-height:100vh}
 .landing-content{width:100%;padding:0 24px 50px;display:flex;flex-direction:column;align-items:center}
 .landing-card{width:100%;max-width:400px;padding:34px 26px;animation:slideUp 0.9s cubic-bezier(.22,1,.36,1)}
@@ -49,8 +38,6 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 .feature-list{margin-bottom:22px;display:flex;flex-direction:column;gap:8px}
 .feature-item{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.9);font-weight:500}
 .feature-dot{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
-
-/* AUTH */
 .auth-page{align-items:center;justify-content:center;padding:40px 24px;min-height:100vh}
 .auth-card{width:100%;max-width:380px;padding:34px 26px;animation:slideUp 0.5s ease}
 .auth-logo{font-family:'Lora',serif;font-size:28px;font-style:italic;color:#fff;text-align:center;margin-bottom:4px}
@@ -59,171 +46,160 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 .form-link{color:#fff;cursor:pointer;font-weight:700;text-decoration:underline;font-size:13px}
 .form-divider{text-align:center;color:rgba(255,255,255,0.55);font-size:13px;margin:10px 0}
 .error-msg{background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#ff8877;margin-bottom:12px;display:none}
-
-/* APP SHELL */
+.success-msg{background:rgba(127,255,127,0.2);border:1px solid rgba(127,255,127,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#7fff7f;margin-bottom:12px;display:none}
+ 
+/* ONBOARDING */
+.onboard-step{display:none}.onboard-step.active{display:block}
+.onboard-progress{display:flex;gap:6px;margin-bottom:24px;justify-content:center}
+.onboard-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all 0.3s}
+.onboard-dot.active{background:#fff;width:24px;border-radius:4px}
+ 
 .app-shell{flex:1;display:flex;flex-direction:column;max-width:430px;margin:0 auto;width:100%}
-.top-bar{padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center}
+.top-bar{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center}
 .top-bar-name{font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,0.2)}
-.top-bar-right{display:flex;align-items:center;gap:10px}
 .tab-content{flex:1;overflow-y:auto;padding-bottom:90px;scrollbar-width:none}
 .tab-content::-webkit-scrollbar{display:none}
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,30,20,0.88);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.1);display:flex;padding:8px 0 20px;z-index:100}
-.nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.38);padding:8px 0 0;transition:all 0.2s}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,25,15,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.1);display:flex;padding:8px 0 20px;z-index:100}
+.nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:8px 0 0;transition:all 0.2s}
 .nav-btn.active{color:#fff}
 .nav-btn.active .nav-icon{transform:scale(1.15);filter:drop-shadow(0 0 6px rgba(255,255,255,0.4))}
 .nav-icon{font-size:20px;line-height:1;transition:all 0.2s}
-
-/* CARDS */
-.page-pad{padding:14px 20px 0}
-.section-label{font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:10px}
-.card{margin-bottom:10px}
-.hero-card{padding:22px;margin-bottom:10px;position:relative;overflow:hidden}
+.page-pad{padding:12px 18px 0}
+.section-label{font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:10px}
+.hero-card{padding:20px;margin-bottom:10px;position:relative;overflow:hidden}
 .hero-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06)}
-.hero-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:4px}
-.hero-amount{font-family:'Lora',serif;font-size:44px;font-weight:400;color:#fff;letter-spacing:-0.02em;line-height:1.1;margin-bottom:10px;text-shadow:0 2px 20px rgba(0,0,0,0.15)}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.16);padding:4px 12px;border-radius:20px;font-size:11px;color:#fff;font-weight:600;border:1px solid rgba(255,255,255,0.25)}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.stat-card{padding:14px}
-.stat-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:3px}
-.stat-value{font-size:20px;font-weight:800;color:#fff}
-.stat-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px}
-.insight-card{padding:14px 16px;margin-bottom:8px;cursor:pointer;border-left:3px solid;transition:all 0.2s}
+.hero-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px}
+.hero-amount{font-family:'Lora',serif;font-size:42px;font-weight:400;color:#fff;letter-spacing:-0.02em;line-height:1.1;margin-bottom:10px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:11px;color:#fff;font-weight:600;border:1px solid rgba(255,255,255,0.22)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.stat-card{padding:13px}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:3px}
+.stat-value{font-size:19px;font-weight:800;color:#fff}
+.stat-sub{font-size:10px;color:rgba(255,255,255,0.42);margin-top:1px}
+.insight-card{padding:13px 15px;margin-bottom:8px;cursor:pointer;border-left:3px solid;transition:all 0.2s}
 .insight-card:hover{transform:translateX(3px)}
 .insight-title{font-size:12px;font-weight:800;margin-bottom:4px;color:#fff}
-.insight-body{font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6}
-.insight-cta{font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px;color:rgba(255,255,255,0.85)}
+.insight-body{font-size:12px;color:rgba(255,255,255,0.72);line-height:1.6}
+.insight-cta{font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px;color:rgba(255,255,255,0.82)}
 .tx-card{overflow:hidden;margin-bottom:10px}
-.tx-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);transition:background 0.15s;cursor:default}
+.tx-row{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid rgba(255,255,255,0.07);transition:background 0.15s}
 .tx-row:last-child{border-bottom:none}
 .tx-row:hover{background:rgba(255,255,255,0.04)}
-.tx-icon{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.tx-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .tx-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:1px}
-.tx-date{font-size:10px;color:rgba(255,255,255,0.48)}
+.tx-date{font-size:10px;color:rgba(255,255,255,0.45)}
 .tx-amount{font-size:13px;font-weight:800;color:#fff;margin-left:auto;flex-shrink:0}
-
-/* PROGRESS */
 .progress-track{height:6px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden}
 .progress-fill{height:100%;border-radius:10px;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
-
-/* CATEGORY */
-.cat-card{padding:14px 16px;margin-bottom:8px;transition:transform 0.2s}
+.cat-card{padding:13px 15px;margin-bottom:8px;transition:transform 0.2s}
 .cat-card:hover{transform:translateY(-1px)}
 .cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .cat-left{display:flex;align-items:center;gap:8px}
-.cat-icon-box{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:15px}
+.cat-icon-box{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:14px}
 .cat-name{font-size:13px;font-weight:700;color:#fff}
-.cat-right{text-align:right}
-.cat-amount{font-size:14px;font-weight:800;color:#fff}
-.cat-budget{font-size:10px;color:rgba(255,255,255,0.48)}
+.cat-amount{font-size:13px;font-weight:800;color:#fff}
+.cat-budget{font-size:10px;color:rgba(255,255,255,0.45)}
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:800;letter-spacing:0.06em;margin-left:5px}
-
-/* GOALS */
-.goal-card{padding:18px;margin-bottom:10px;transition:transform 0.2s}
+.goal-card{padding:16px;margin-bottom:10px;transition:transform 0.2s}
 .goal-card:hover{transform:translateY(-1px)}
 .goal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.goal-icon-box{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:20px}
-.goal-name{font-size:15px;font-weight:800;color:#fff;margin-bottom:1px}
-.goal-date{font-size:10px;color:rgba(255,255,255,0.5)}
-.goal-pct{font-family:'Lora',serif;font-size:28px;font-weight:400;color:#fff;line-height:1}
+.goal-icon-box{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:19px}
+.goal-name{font-size:14px;font-weight:800;color:#fff;margin-bottom:1px}
+.goal-date{font-size:10px;color:rgba(255,255,255,0.48)}
+.goal-pct{font-family:'Lora',serif;font-size:26px;font-weight:400;color:#fff;line-height:1}
 .goal-track{height:7px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;margin-bottom:6px}
-.goal-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.5),#fff);box-shadow:0 0 10px rgba(255,255,255,0.25)}
-.goal-nums{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:12px;font-weight:600}
-.goal-cta{font-size:11px;font-weight:800;color:rgba(255,255,255,0.8);cursor:pointer;letter-spacing:0.04em;transition:color 0.2s}
-.goal-cta:hover{color:#fff}
-
-/* MODAL */
-.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.goal-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.5),#fff);box-shadow:0 0 10px rgba(255,255,255,0.2)}
+.goal-nums{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;font-weight:600}
+.goal-actions{display:flex;gap:6px}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.active{display:flex}
-.modal{width:100%;max-width:430px;padding:28px 24px 40px;border-radius:28px 28px 0 0;animation:slideUp 0.35s cubic-bezier(.22,1,.36,1)}
-.modal-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-
-/* ADVISOR */
-.advisor-header{padding:18px 22px 14px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;background:rgba(10,30,20,0.6);backdrop-filter:blur(20px)}
-.advisor-avatar{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(255,255,255,0.25)}
-.advisor-name{font-size:15px;font-weight:800;color:#fff}
+.modal{width:100%;max-width:430px;padding:26px 22px 36px;border-radius:26px 26px 0 0;animation:slideUp 0.35s cubic-bezier(.22,1,.36,1)}
+.modal-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.advisor-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;background:rgba(8,25,15,0.65);backdrop-filter:blur(20px)}
+.advisor-avatar{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(255,255,255,0.22)}
+.advisor-name{font-size:14px;font-weight:800;color:#fff}
 .advisor-status{display:flex;align-items:center;gap:5px;margin-top:2px}
 .status-dot{width:5px;height:5px;border-radius:50%;background:#7fff7f;animation:pdot 2s ease-in-out infinite}
 @keyframes pdot{0%,100%{opacity:1}50%{opacity:0.3}}
 .status-text{font-size:10px;color:#7fff7f;font-weight:700}
-.messages-wrap{flex:1;overflow-y:auto;padding:18px 18px 10px;display:flex;flex-direction:column;gap:14px;scrollbar-width:none}
+.messages-wrap{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
 .messages-wrap::-webkit-scrollbar{display:none}
 .msg-sage{display:flex;gap:8px;align-items:flex-start;animation:slideUp 0.3s ease}
-.msg-avatar{width:28px;height:28px;border-radius:9px;background:rgba(255,255,255,0.13);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;border:1px solid rgba(255,255,255,0.18)}
-.msg-bubble-sage{border-radius:4px 16px 16px 16px;padding:12px 14px;max-width:82%}
-.msg-label{font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
-.msg-text-sage{font-family:'Lora',serif;font-size:15px;color:#fff;line-height:1.75}
+.msg-avatar{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.13);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;border:1px solid rgba(255,255,255,0.18)}
+.msg-bubble-sage{border-radius:4px 16px 16px 16px;padding:11px 13px;max-width:82%}
+.msg-label{font-size:9px;font-weight:800;color:rgba(255,255,255,0.65);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
+.msg-text-sage{font-family:'Lora',serif;font-size:15px;color:#fff;line-height:1.7}
 .msg-user{display:flex;justify-content:flex-end;animation:slideUp 0.3s ease}
-.msg-bubble-user{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:16px 4px 16px 16px;padding:10px 14px;max-width:78%}
+.msg-bubble-user{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.28);border-radius:16px 4px 16px 16px;padding:10px 13px;max-width:78%}
 .msg-text-user{font-size:13px;color:#fff;line-height:1.6;font-weight:500}
-.quick-prompts{display:flex;gap:7px;overflow-x:auto;padding:8px 18px 6px;scrollbar-width:none}
+.quick-prompts{display:flex;gap:7px;overflow-x:auto;padding:8px 16px 6px;scrollbar-width:none}
 .quick-prompts::-webkit-scrollbar{display:none}
-.quick-pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:18px;color:#fff;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
-.quick-pill:hover{background:rgba(255,255,255,0.22)}
-.input-bar{padding:10px 18px 26px;background:rgba(10,30,20,0.7);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08)}
-.input-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border-radius:22px;padding:9px 14px;border:1px solid rgba(255,255,255,0.2)}
+.quick-pill{background:rgba(255,255,255,0.11);border:1px solid rgba(255,255,255,0.22);border-radius:16px;color:#fff;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
+.quick-pill:hover{background:rgba(255,255,255,0.2)}
+.input-bar{padding:10px 16px 24px;background:rgba(8,25,15,0.75);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08)}
+.input-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.11);border-radius:22px;padding:9px 13px;border:1px solid rgba(255,255,255,0.18)}
 .chat-input{border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;color:#fff;flex:1;outline:none;font-weight:500}
-.chat-input::placeholder{color:rgba(255,255,255,0.38)}
-.send-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
-.send-btn:hover{background:rgba(255,255,255,0.32)}
-.chat-disclaimer{font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-top:6px;letter-spacing:0.1em;text-transform:uppercase}
+.chat-input::placeholder{color:rgba(255,255,255,0.35)}
+.send-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.send-btn:hover{background:rgba(255,255,255,0.28)}
+.chat-disclaimer{font-size:9px;color:rgba(255,255,255,0.32);text-align:center;margin-top:5px;letter-spacing:0.1em;text-transform:uppercase}
 .typing{display:flex;gap:4px;align-items:center;padding:6px 0}
 .typing-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.6);animation:tdot 1.4s infinite ease-in-out}
 @keyframes tdot{0%,80%,100%{transform:translateY(0);opacity:0.4}40%{transform:translateY(-5px);opacity:1}}
-
-/* DISCLAIMER FOOTER */
-.screen-disclaimer{text-align:center;padding:10px 20px 4px;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;font-weight:600}
-
-/* PLANS */
-.plan-hero{padding:36px 22px 24px;text-align:center}
-.plan-card{padding:20px;margin-bottom:10px;transition:transform 0.2s}
+.screen-disclaimer{text-align:center;padding:8px 18px 4px;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;font-weight:600}
+.alert-banner{margin:8px 18px 0;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:600;display:none}
+.alert-warning{background:rgba(255,200,50,0.2);border:1px solid rgba(255,200,50,0.35);color:#ffd84f}
+.alert-danger{background:rgba(255,100,80,0.2);border:1px solid rgba(255,100,80,0.3);color:#ff8877}
+.search-bar{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 14px;font-size:13px;font-family:'Nunito',sans-serif;color:#fff;outline:none;width:100%;margin-bottom:12px}
+.search-bar::placeholder{color:rgba(255,255,255,0.35)}
+.chart-bar-container{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px;margin-bottom:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height 0.8s ease;background:rgba(127,255,127,0.5)}
+.chart-label{font-size:8px;color:rgba(255,255,255,0.5);font-weight:700;letter-spacing:0.05em}
+.plan-card{padding:18px;margin-bottom:10px;transition:transform 0.2s}
 .plan-card:hover{transform:translateY(-1px)}
-.plan-name{font-size:16px;font-weight:800;color:#fff;margin-bottom:3px}
-.plan-price{font-size:32px;font-weight:800;color:#fff;line-height:1;margin-bottom:14px}
+.plan-name{font-size:15px;font-weight:800;color:#fff;margin-bottom:3px}
+.plan-price{font-size:30px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px}
 .plan-price span{font-size:13px;font-weight:400;opacity:0.65}
-.plan-features{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.plan-features{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
 .plan-feature{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.82);font-weight:500}
-.plan-btn{width:100%;padding:14px;border-radius:13px;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em}
-.plan-btn:hover{transform:translateY(-1px)}
-
-/* SETTINGS */
-.settings-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:background 0.15s}
-.settings-item:hover{background:rgba(255,255,255,0.04)}
-.settings-item:last-child{border-bottom:none}
-.settings-label{font-size:14px;font-weight:600;color:#fff}
-.settings-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px}
-
+.plan-btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em}
+.profile-item{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:background 0.15s}
+.profile-item:hover{background:rgba(255,255,255,0.04)}
+.profile-item:last-child{border-bottom:none}
+.profile-label{font-size:13px;font-weight:600;color:#fff}
+.profile-sub{font-size:11px;color:rgba(255,255,255,0.48);margin-top:1px}
+.toggle-switch{width:42px;height:22px;background:rgba(255,255,255,0.2);border-radius:11px;position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
+.toggle-switch.on{background:rgba(127,255,127,0.5)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.3s}
+.toggle-switch.on::after{transform:translateX(20px)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp 0.4s cubic-bezier(.22,1,.36,1) both}
 </style>
 </head>
 <body>
-
 <div class="landing-bg"></div>
 <div class="app-bg" id="app-bg"></div>
-
+ 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-add-tx">
   <div class="modal glass-strong">
     <div class="modal-title">Add Transaction <button class="modal-close" onclick="closeModal('modal-add-tx')">×</button></div>
-    <label class="form-label">Transaction Name</label>
+    <label class="form-label">Name</label>
     <input class="form-input" id="tx-name" placeholder="e.g. Grocery Shopping">
     <label class="form-label">Amount ($)</label>
-    <input class="form-input" id="tx-amount" type="number" placeholder="0.00">
+    <input class="form-input" id="tx-amount" type="number" placeholder="0.00" step="0.01">
     <label class="form-label">Type</label>
-    <select class="form-select" id="tx-type">
-      <option value="expense">Expense</option>
-      <option value="income">Income</option>
-    </select>
+    <select class="form-select" id="tx-type"><option value="expense">Expense</option><option value="income">Income</option></select>
     <label class="form-label">Category</label>
-    <select class="form-select" id="tx-category">
-      <option>Food</option><option>Housing</option><option>Transport</option>
-      <option>Entertainment</option><option>Health</option><option>Subscriptions</option><option>Other</option>
-    </select>
-    <button class="btn-primary" onclick="addTransaction()">Add Transaction</button>
+    <input class="form-input" id="tx-category" placeholder="e.g. Food, Housing, Transport...">
+    <label class="form-label">Date</label>
+    <input class="form-input" id="tx-date" type="date">
+    <button class="btn-primary" onclick="addTransaction()">Add Transaction ✓</button>
   </div>
 </div>
-
+ 
 <div class="modal-overlay" id="modal-add-goal">
   <div class="modal glass-strong">
     <div class="modal-title">Add Goal <button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
@@ -235,24 +211,53 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <input class="form-input" id="goal-current" type="number" placeholder="0">
     <label class="form-label">Target Date</label>
     <input class="form-input" id="goal-deadline" type="date">
-    <button class="btn-primary" onclick="addGoal()">Add Goal</button>
+    <button class="btn-primary" onclick="addGoal()">Add Goal 🎯</button>
   </div>
 </div>
-
+ 
+<div class="modal-overlay" id="modal-contribute-goal">
+  <div class="modal glass-strong">
+    <div class="modal-title">Add to Goal <button class="modal-close" onclick="closeModal('modal-contribute-goal')">×</button></div>
+    <input type="hidden" id="contribute-goal-id">
+    <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px" id="contribute-goal-name"></p>
+    <label class="form-label">Amount to Add ($)</label>
+    <input class="form-input" id="contribute-amount" type="number" placeholder="100">
+    <button class="btn-primary" onclick="contributeToGoal()">Add Savings ✓</button>
+  </div>
+</div>
+ 
 <div class="modal-overlay" id="modal-add-budget">
   <div class="modal glass-strong">
     <div class="modal-title">Set Budget <button class="modal-close" onclick="closeModal('modal-add-budget')">×</button></div>
-    <label class="form-label">Category</label>
-    <select class="form-select" id="budget-category">
-      <option>Food</option><option>Housing</option><option>Transport</option>
-      <option>Entertainment</option><option>Health</option><option>Subscriptions</option>
-    </select>
+    <label class="form-label">Category Name</label>
+    <input class="form-input" id="budget-category" placeholder="e.g. Food, Clothing, Gym...">
     <label class="form-label">Monthly Budget ($)</label>
     <input class="form-input" id="budget-amount" type="number" placeholder="500">
-    <button class="btn-primary" onclick="saveBudget()">Save Budget</button>
+    <button class="btn-primary" onclick="saveBudget()">Save Budget ✓</button>
   </div>
 </div>
-
+ 
+<div class="modal-overlay" id="modal-edit-tx">
+  <div class="modal glass-strong">
+    <div class="modal-title">Edit Transaction <button class="modal-close" onclick="closeModal('modal-edit-tx')">×</button></div>
+    <input type="hidden" id="edit-tx-id">
+    <label class="form-label">Name</label>
+    <input class="form-input" id="edit-tx-name" placeholder="Transaction name">
+    <label class="form-label">Amount ($)</label>
+    <input class="form-input" id="edit-tx-amount" type="number" step="0.01">
+    <label class="form-label">Category</label>
+    <input class="form-input" id="edit-tx-category" placeholder="Category">
+    <button class="btn-primary" onclick="saveEditTransaction()">Save Changes ✓</button>
+  </div>
+</div>
+ 
+<div class="modal-overlay" id="modal-monthly-summary">
+  <div class="modal glass-strong">
+    <div class="modal-title">📊 Monthly Summary <button class="modal-close" onclick="closeModal('modal-monthly-summary')">×</button></div>
+    <div id="monthly-summary-content"></div>
+  </div>
+</div>
+ 
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="landing">
@@ -269,12 +274,12 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         </div>
         <button class="btn-primary" onclick="show('s-signup')">Get Started — Free 🌱</button>
         <button class="btn-outline" onclick="show('s-login')">I Already Have an Account</button>
-        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.45);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
       </div>
     </div>
   </div>
 </div>
-
+ 
 <!-- SIGN UP -->
 <div class="screen" id="s-signup">
   <div class="auth-page">
@@ -291,11 +296,11 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters">
       <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create My Account 🌱</button>
       <div class="form-divider">Already have an account? <span class="form-link" onclick="show('s-login')">Sign in</span></div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.45);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
     </div>
   </div>
 </div>
-
+ 
 <!-- LOGIN -->
 <div class="screen" id="s-login">
   <div class="auth-page">
@@ -310,122 +315,171 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <input class="form-input" id="login-password" type="password" placeholder="Your password">
       <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In 🌿</button>
       <div class="form-divider">No account? <span class="form-link" onclick="show('s-signup')">Sign up free</span></div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.45);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
     </div>
   </div>
 </div>
-
+ 
+<!-- ONBOARDING -->
+<div class="screen" id="s-onboard">
+  <div class="auth-page">
+    <div class="auth-card glass-strong">
+      <div class="auth-logo">🌿 Ember</div>
+      <div class="auth-sub" id="onboard-sub">Let's set up your profile</div>
+      <div class="onboard-progress">
+        <div class="onboard-dot active" id="od1"></div>
+        <div class="onboard-dot" id="od2"></div>
+        <div class="onboard-dot" id="od3"></div>
+      </div>
+      <div class="onboard-step active" id="ob-step1">
+        <label class="form-label">What's your monthly income? ($)</label>
+        <input class="form-input" id="ob-income" type="number" placeholder="e.g. 3000">
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">This helps Ember calculate your savings rate accurately.</div>
+        <button class="btn-primary" onclick="obNext(1)">Next →</button>
+      </div>
+      <div class="onboard-step" id="ob-step2">
+        <label class="form-label">What's your first savings goal?</label>
+        <input class="form-input" id="ob-goal-name" placeholder="e.g. Emergency Fund, Vacation...">
+        <label class="form-label">Target Amount ($)</label>
+        <input class="form-input" id="ob-goal-target" type="number" placeholder="5000">
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">You can add more goals later.</div>
+        <button class="btn-primary" onclick="obNext(2)">Next →</button>
+        <button class="btn-outline" onclick="obSkip(2)">Skip for now</button>
+      </div>
+      <div class="onboard-step" id="ob-step3">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:48px;margin-bottom:12px">🎉</div>
+          <div style="font-family:'Lora',serif;font-size:22px;color:#fff;margin-bottom:8px">You're all set!</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6">Start by adding your first transaction. Ember will coach you from there.</div>
+        </div>
+        <button class="btn-primary" onclick="finishOnboard()">Open My Dashboard 🌿</button>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-top:12px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+    </div>
+  </div>
+</div>
+ 
 <!-- MAIN APP -->
 <div class="screen" id="s-app">
   <div class="app-shell">
-
-    <!-- HOME -->
+ 
+    <!-- HOME TAB -->
     <div id="tab-home" class="tab-content">
       <div class="top-bar">
         <div class="top-bar-name" id="greeting">Good morning 👋</div>
-        <div class="top-bar-right">
-          <span style="font-size:22px;cursor:pointer" onclick="switchTab('plans')">🌿</span>
-          <span style="font-size:18px;cursor:pointer" onclick="doLogout()" title="Sign out">🚪</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:13px;cursor:pointer;color:rgba(255,255,255,0.7);font-weight:600" onclick="showMonthlySummary()">📊</span>
+          <span style="font-size:20px;cursor:pointer" onclick="switchTab('profile')">👤</span>
         </div>
       </div>
+      <div id="budget-alerts" style="margin:8px 18px 0"></div>
       <div class="page-pad">
-        <div class="hero-card glass animate-in" style="margin-top:14px">
+        <div class="hero-card glass animate-in" style="margin-top:12px">
           <div class="hero-label">Net Worth</div>
           <div class="hero-amount" id="net-worth-display">$0</div>
-          <div class="hero-badge" id="savings-badge">Loading your finances...</div>
+          <div class="hero-badge" id="savings-badge">Add transactions to get started</div>
         </div>
         <div class="stat-grid">
           <div class="stat-card glass animate-in"><div class="stat-label">Income</div><div class="stat-value" id="stat-income">$0</div><div class="stat-sub">This month</div></div>
           <div class="stat-card glass animate-in"><div class="stat-label">Spent</div><div class="stat-value" id="stat-spent">$0</div><div class="stat-sub">This month</div></div>
           <div class="stat-card glass animate-in"><div class="stat-label">Saved</div><div class="stat-value" id="stat-saved">$0</div><div class="stat-sub">This month</div></div>
-          <div class="stat-card glass animate-in"><div class="stat-label">Transactions</div><div class="stat-value" id="stat-count">0</div><div class="stat-sub">This month</div></div>
+          <div class="stat-card glass animate-in"><div class="stat-label">Transactions</div><div class="stat-value" id="stat-count">0</div><div class="stat-sub">Total</div></div>
         </div>
+ 
+        <!-- Spending chart -->
+        <div class="glass animate-in" style="padding:14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="section-label" style="margin:0">6-Month Spending</div>
+            <div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,0.5)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(127,255,127,0.5);display:inline-block"></span>Income</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(255,150,80,0.5);display:inline-block"></span>Spent</span>
+            </div>
+          </div>
+          <div class="chart-bar-container" id="spending-chart"></div>
+        </div>
+ 
         <div class="section-label" style="margin-top:4px">Ember Notices</div>
-        <div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,0.7)">
-          <div class="insight-title">💡 Getting Started</div>
-          <div class="insight-body">Add your first transactions to see personalised insights and AI coaching based on your real numbers.</div>
-          <div class="insight-cta" onclick="openModal('modal-add-tx')">ADD TRANSACTION →</div>
+        <div id="home-insights">
+          <div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,0.7)" onclick="openModal('modal-add-tx')">
+            <div class="insight-title">💡 Getting Started</div>
+            <div class="insight-body">Add your first transaction to see personalised insights from Ember.</div>
+            <div class="insight-cta">ADD TRANSACTION →</div>
+          </div>
         </div>
-        <div class="insight-card glass animate-in" style="border-left-color:rgba(255,220,80,0.7)" onclick="switchTab('advisor')">
-          <div class="insight-title">✨ Chat with Ember AI</div>
-          <div class="insight-body">Ask Ember anything about your finances. Get personalised coaching based on your actual data.</div>
-          <div class="insight-cta">OPEN ADVISOR →</div>
-        </div>
-        <div class="section-label" style="margin-top:4px;display:flex;justify-content:space-between;align-items:center">
-          <span>Recent Transactions</span>
-          <span style="font-size:10px;color:rgba(255,255,255,0.7);cursor:pointer;font-weight:700" onclick="openModal('modal-add-tx')">+ ADD</span>
+ 
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;margin-top:4px">
+          <div class="section-label" style="margin:0">Recent</div>
+          <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Add</button>
         </div>
         <div class="tx-card glass" id="home-transactions">
-          <div class="tx-row"><div style="font-size:13px;color:rgba(255,255,255,0.5);padding:8px 0;width:100%;text-align:center">No transactions yet. Add your first one!</div></div>
+          <div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Ember is not a licensed financial adviser</div>
-        <div style="height:10px"></div>
+        <div style="height:8px"></div>
       </div>
     </div>
-
-    <!-- SPENDING -->
+ 
+    <!-- SPENDING TAB -->
     <div id="tab-spend" class="tab-content" style="display:none">
-      <div class="page-pad" style="padding-top:22px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px">
+      <div class="page-pad" style="padding-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2px">
           <div>
             <div class="section-label">Spending This Month</div>
-            <div style="font-family:'Lora',serif;font-size:40px;font-weight:400;color:#fff;letter-spacing:-0.02em" id="spend-total">$0</div>
+            <div style="font-family:'Lora',serif;font-size:38px;font-weight:400;color:#fff;letter-spacing:-0.02em" id="spend-total">$0</div>
           </div>
           <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Transaction</button>
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px;font-weight:600" id="spend-subtitle">Add transactions to see your spending</div>
-
-        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center">
-          <span>By Category</span>
-          <span style="font-size:10px;color:rgba(255,255,255,0.7);cursor:pointer;font-weight:700" onclick="openModal('modal-add-budget')">⚙ Set Budgets</span>
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px" id="spend-subtitle">Add transactions to see your spending</div>
+ 
+        <input class="search-bar" id="tx-search" placeholder="🔍 Search transactions..." oninput="filterTransactions()">
+ 
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="section-label" style="margin:0">By Category</div>
+          <button class="btn-small btn-blue" onclick="openModal('modal-add-budget')">⚙ Budgets</button>
         </div>
-        <div id="categories-list">
-          <div class="glass" style="padding:16px;text-align:center;font-size:13px;color:rgba(255,255,255,0.5)">Add transactions to see categories</div>
-        </div>
-
+        <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div></div>
+ 
         <div class="section-label" style="margin-top:12px">All Transactions</div>
         <div class="tx-card glass" id="all-transactions">
-          <div class="tx-row"><div style="font-size:13px;color:rgba(255,255,255,0.5);padding:8px 0;width:100%;text-align:center">No transactions yet</div></div>
+          <div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice</div>
-        <div style="height:10px"></div>
+        <div style="height:8px"></div>
       </div>
     </div>
-
-    <!-- GOALS -->
+ 
+    <!-- GOALS TAB -->
     <div id="tab-goals" class="tab-content" style="display:none">
-      <div class="page-pad" style="padding-top:22px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="page-pad" style="padding-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
           <div>
             <div class="section-label">Your Goals</div>
-            <div style="font-family:'Lora',serif;font-size:26px;font-weight:400;color:#fff;line-height:1.3">Financial milestones 🎯</div>
+            <div style="font-family:'Lora',serif;font-size:24px;font-weight:400;color:#fff;line-height:1.3">Financial milestones 🎯</div>
           </div>
           <button class="btn-small btn-green" onclick="openModal('modal-add-goal')">+ Goal</button>
         </div>
-
         <div id="goals-list">
-          <div class="glass" style="padding:20px;text-align:center">
-            <div style="font-size:32px;margin-bottom:8px">🎯</div>
-            <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:14px">No goals yet. Set your first financial goal!</div>
+          <div class="glass" style="padding:18px;text-align:center">
+            <div style="font-size:30px;margin-bottom:8px">🎯</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:12px">No goals yet. Set your first financial goal!</div>
             <button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button>
           </div>
         </div>
-
-        <div class="section-label" style="margin-top:14px">💡 What If Scenarios</div>
-        <div class="glass" style="padding:14px 16px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
-          <div style="font-family:'Lora',serif;font-size:14px;font-style:italic;color:#fff;margin-bottom:5px">"How do I reach my goals faster?"</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.65);font-weight:800;letter-spacing:0.06em;text-transform:uppercase">Ask Ember →</div>
+        <div class="section-label" style="margin-top:12px">💡 What If</div>
+        <div class="glass" style="padding:12px 14px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
+          <div style="font-family:'Lora',serif;font-size:13px;font-style:italic;color:#fff;margin-bottom:4px">"How do I reach my goals faster?"</div>
+          <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Ember →</div>
         </div>
-        <div class="glass" style="padding:14px 16px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
-          <div style="font-family:'Lora',serif;font-size:14px;font-style:italic;color:#fff;margin-bottom:5px">"What should I prioritise first?"</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.65);font-weight:800;letter-spacing:0.06em;text-transform:uppercase">Ask Ember →</div>
+        <div class="glass" style="padding:12px 14px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
+          <div style="font-family:'Lora',serif;font-size:13px;font-style:italic;color:#fff;margin-bottom:4px">"Should I pay debt or save first?"</div>
+          <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Ember →</div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice</div>
-        <div style="height:10px"></div>
+        <div style="height:8px"></div>
       </div>
     </div>
-
-    <!-- ADVISOR -->
+ 
+    <!-- ADVISOR TAB -->
     <div id="tab-advisor" class="tab-content" style="display:none;flex-direction:column;height:calc(100vh - 57px)">
       <div class="advisor-header">
         <div class="advisor-avatar">🌿</div>
@@ -433,13 +487,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <div class="advisor-name">Ember Advisor</div>
           <div class="advisor-status"><div class="status-dot"></div><div class="status-text">Active · AI Powered</div></div>
         </div>
+        <button class="btn-small btn-red" style="margin-left:auto;padding:5px 10px;font-size:10px" onclick="clearChat()">Clear</button>
       </div>
       <div class="messages-wrap" id="messages">
         <div class="msg-sage">
           <div class="msg-avatar">🌿</div>
           <div class="msg-bubble-sage glass">
             <div class="msg-label">Ember</div>
-            <div class="msg-text-sage" id="welcome-msg">Hello! I'm Ember, your personal finance coach. Add some transactions and I'll give you personalised insights. What would you like to know?</div>
+            <div class="msg-text-sage">Hello! I'm Ember, your personal finance coach. Add some transactions and I'll give you personalised insights based on your real numbers. What would you like to know?</div>
           </div>
         </div>
       </div>
@@ -447,26 +502,78 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <button class="quick-pill" onclick="sendQuick(this)">Where am I losing money?</button>
         <button class="quick-pill" onclick="sendQuick(this)">Can I afford a vacation?</button>
         <button class="quick-pill" onclick="sendQuick(this)">How do I save more?</button>
-        <button class="quick-pill" onclick="sendQuick(this)">Pay debt or invest?</button>
         <button class="quick-pill" onclick="sendQuick(this)">Review my spending</button>
+        <button class="quick-pill" onclick="sendQuick(this)">Pay debt or invest?</button>
+        <button class="quick-pill" onclick="sendQuick(this)">Am I on track?</button>
       </div>
       <div class="input-bar">
         <div class="input-wrap">
           <input class="chat-input" id="chat-input" placeholder="Ask Ember anything…" onkeydown="if(event.key==='Enter')sendMessage()">
           <button class="send-btn" onclick="sendMessage()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
         <div class="chat-disclaimer">Educational purposes only · Not financial advice · Not a licensed financial adviser</div>
       </div>
     </div>
-
-    <!-- PLANS -->
+ 
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" class="tab-content" style="display:none">
+      <div class="page-pad" style="padding-top:20px">
+        <div class="section-label">Profile & Settings</div>
+ 
+        <!-- Profile card -->
+        <div class="glass animate-in" style="padding:20px;margin-bottom:12px;text-align:center">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid rgba(255,255,255,0.25)">👤</div>
+          <div style="font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;margin-bottom:4px" id="profile-name-display">Loading...</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55)" id="profile-email-display">...</div>
+        </div>
+ 
+        <!-- Monthly income -->
+        <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
+          <div class="profile-item" onclick="editIncome()">
+            <div><div class="profile-label">💰 Monthly Income</div><div class="profile-sub" id="income-display">Not set</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" onclick="showMonthlySummary()">
+            <div><div class="profile-label">📊 Monthly Summary</div><div class="profile-sub">View this month's full report</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" onclick="exportCSV()">
+            <div><div class="profile-label">📥 Export Transactions</div><div class="profile-sub">Download as CSV file</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+        </div>
+ 
+        <!-- Account actions -->
+        <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
+          <div class="profile-item" onclick="switchTab('plans')">
+            <div><div class="profile-label">💎 Upgrade to Pro</div><div class="profile-sub">Unlock all features — $12/month</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" onclick="clearAllData()">
+            <div><div class="profile-label">🗑️ Clear All Data</div><div class="profile-sub">Delete all transactions and goals</div></div>
+            <span style="color:rgba(255,100,100,0.7);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" onclick="doLogout()">
+            <div><div class="profile-label" style="color:#ff8877">🚪 Sign Out</div><div class="profile-sub">Log out of your account</div></div>
+            <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
+          </div>
+        </div>
+ 
+        <div style="text-align:center;padding:12px 0;font-size:10px;color:rgba(255,255,255,0.28);line-height:1.8">
+          Ember v2.0 · Educational purposes only<br>Not financial advice · Not a licensed financial adviser<br>Your data is encrypted and secure
+        </div>
+        <div style="height:8px"></div>
+      </div>
+    </div>
+ 
+    <!-- PLANS TAB -->
     <div id="tab-plans" class="tab-content" style="display:none">
-      <div class="plan-hero">
-        <div style="font-size:38px;margin-bottom:12px">🌿</div>
-        <div style="font-family:'Lora',serif;font-size:28px;font-style:italic;color:#fff;margin-bottom:8px;line-height:1.3">Your private<br>finance advisor.</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.7);max-width:250px;margin:0 auto;line-height:1.7;font-weight:500">Real insights from your real numbers.</div>
+      <div style="padding:30px 18px 20px;text-align:center">
+        <div style="font-size:36px;margin-bottom:10px">🌿</div>
+        <div style="font-family:'Lora',serif;font-size:26px;font-style:italic;color:#fff;margin-bottom:8px;line-height:1.3">Your private<br>finance advisor.</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.65);max-width:240px;margin:0 auto;line-height:1.7;font-weight:500">Real insights from your real numbers.</div>
       </div>
       <div class="page-pad">
         <div class="plan-card glass">
@@ -479,7 +586,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ One savings goal</div>
           </div>
         </div>
-        <div class="plan-card" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(24px);border:2px solid rgba(255,255,255,0.42);border-radius:20px;padding:20px;margin-bottom:10px">
+        <div class="plan-card" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(24px);border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:18px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
             <div class="plan-name">Pro</div>
             <div style="background:rgba(255,255,255,0.2);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#fff;letter-spacing:0.08em">MOST POPULAR ⭐</div>
@@ -487,7 +594,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <div class="plan-price">$12<span>/month</span></div>
           <div class="plan-features">
             <div class="plan-feature">✓ Bank connection — auto sync</div>
-            <div class="plan-feature">✓ Unlimited AI advisor conversations</div>
+            <div class="plan-feature">✓ Unlimited AI conversations</div>
             <div class="plan-feature">✓ Auto transaction categorisation</div>
             <div class="plan-feature">✓ Unlimited savings goals</div>
             <div class="plan-feature">✓ Weekly briefing from Ember</div>
@@ -502,309 +609,364 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div style="background:rgba(127,255,127,0.18);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#7fff7f">SAVE 31% 🎉</div>
           </div>
           <div class="plan-price">$99<span>/year</span></div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.58);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
           <button class="plan-btn btn-outline" onclick="alert('Payment integration coming soon! 🌱')">Get Annual Plan</button>
         </div>
-        <div style="text-align:center;padding:14px 0 4px;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.8;font-weight:500">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
+        <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Ember is not a licensed financial adviser</div>
-        <div style="height:10px"></div>
+        <div style="height:8px"></div>
       </div>
     </div>
-
+ 
     <nav class="bottom-nav">
       <button class="nav-btn active" id="nav-home" onclick="switchTab('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" id="nav-spend" onclick="switchTab('spend')"><span class="nav-icon">📊</span>Spending</button>
       <button class="nav-btn" id="nav-goals" onclick="switchTab('goals')"><span class="nav-icon">🎯</span>Goals</button>
       <button class="nav-btn" id="nav-advisor" onclick="switchTab('advisor')"><span class="nav-icon">✨</span>Advisor</button>
-      <button class="nav-btn" id="nav-plans" onclick="switchTab('plans')"><span class="nav-icon">💎</span>Plans</button>
+      <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')"><span class="nav-icon">👤</span>Profile</button>
     </nav>
   </div>
 </div>
-
+ 
 <script>
-// ── SUPABASE ────────────────────────────────────────────────────
-const SUPA_URL = 'https://jjftkkpzyzojtxulpfcj.supabase.co';
-const SUPA_KEY = 'sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
-const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY);
-
-let currentUser = null;
-let userTransactions = [];
-let userGoals = [];
-let userBudgets = {};
-
-// ── ICONS ────────────────────────────────────────────────────────
-const CAT_ICONS = {Food:'🍽️',Housing:'🏠',Transport:'🚗',Entertainment:'🎬',Health:'💊',Subscriptions:'📱',Income:'💰',Other:'💳'};
-
-// ── HELPERS ──────────────────────────────────────────────────────
+const SUPA_URL='https://jjftkkpzyzojtxulpfcj.supabase.co';
+const SUPA_KEY='sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
+const {createClient}=supabase;
+const sb=createClient(SUPA_URL,SUPA_KEY);
+let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
+let chatHistory=[];
+const CAT_ICONS={Food:'🍽️',Housing:'🏠',Transport:'🚗',Entertainment:'🎬',Health:'💊',Subscriptions:'📱',Income:'💰',Salary:'💰',Other:'💳',Shopping:'🛍️',Clothing:'👕',Education:'📚',Gym:'💪',Kids:'👶',Travel:'✈️',Utilities:'⚡',Insurance:'🛡️'};
+function getCatIcon(cat){return CAT_ICONS[cat]||'💳'}
+function fmt(n){return '$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const isApp = id==='s-app';
-  document.querySelector('.landing-bg').style.display = isApp?'none':'block';
-  document.getElementById('app-bg').style.display = isApp?'block':'none';
+  const isApp=id==='s-app'||id==='s-onboard';
+  document.querySelector('.landing-bg').style.display=isApp?'none':'block';
+  document.getElementById('app-bg').style.display=isApp?'block':'none';
 }
-
-function openModal(id){document.getElementById(id).classList.add('active')}
+function openModal(id){document.getElementById(id).classList.add('active');const inp=document.querySelector(`#${id} input[type="date"]`);if(inp&&!inp.value)inp.value=new Date().toISOString().split('T')[0];}
 function closeModal(id){document.getElementById(id).classList.remove('active')}
-
-function fmt(n){return '$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-
-function setGreeting(name){
-  const h=new Date().getHours();
-  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-  document.getElementById('greeting').textContent=`${g}, ${name||''}! 👋`;
-}
-
-// ── AUTH ─────────────────────────────────────────────────────────
+function setGreeting(name){const h=new Date().getHours();const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';document.getElementById('greeting').textContent=`${g}, ${name||''}! 👋`}
+ 
+// AUTH
 async function doSignup(){
   const name=document.getElementById('signup-name').value.trim();
   const email=document.getElementById('signup-email').value.trim();
   const pass=document.getElementById('signup-password').value;
-  const errEl=document.getElementById('signup-error');
-  errEl.style.display='none';
-  if(!name||!email||!pass){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return;}
-  if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
-  const btn=document.getElementById('signup-btn');
-  btn.textContent='Creating account...';btn.disabled=true;
+  const err=document.getElementById('signup-error');
+  err.style.display='none';
+  if(!name||!email||!pass){err.textContent='Please fill in all fields.';err.style.display='block';return;}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
+  const btn=document.getElementById('signup-btn');btn.textContent='Creating...';btn.disabled=true;
   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name}}});
-  if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='Create My Account 🌱';btn.disabled=false;return;}
+  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Create My Account 🌱';btn.disabled=false;return;}
   if(data.user){
     await sb.from('profiles').upsert({id:data.user.id,name,email});
     currentUser=data.user;currentUser.name=name;
-    await loadUserData();
-    show('s-app');switchTab('home');
+    show('s-onboard');
   }
   btn.textContent='Create My Account 🌱';btn.disabled=false;
 }
-
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-password').value;
-  const errEl=document.getElementById('login-error');
-  errEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
-  const btn=document.getElementById('login-btn');
-  btn.textContent='Signing in...';btn.disabled=true;
+  const err=document.getElementById('login-error');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
+  const btn=document.getElementById('login-btn');btn.textContent='Signing in...';btn.disabled=true;
   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){errEl.textContent=error.message;errEl.style.display='block';btn.textContent='Sign In 🌿';btn.disabled=false;return;}
+  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Sign In 🌿';btn.disabled=false;return;}
   if(data.user){
     currentUser=data.user;
     const {data:profile}=await sb.from('profiles').select('*').eq('id',data.user.id).single();
-    if(profile)currentUser.name=profile.name;
+    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
     await loadUserData();
     show('s-app');switchTab('home');
   }
   btn.textContent='Sign In 🌿';btn.disabled=false;
 }
-
-async function doLogout(){
-  await sb.auth.signOut();
-  currentUser=null;userTransactions=[];userGoals=[];userBudgets={};
-  show('s-landing');
+async function doLogout(){await sb.auth.signOut();currentUser=null;userTransactions=[];userGoals=[];userBudgets={};monthlyIncome=0;show('s-landing');}
+ 
+// ONBOARDING
+let obIncome=0,obGoalName='',obGoalTarget=0;
+function obNext(step){
+  if(step===1){
+    obIncome=parseFloat(document.getElementById('ob-income').value)||0;
+    document.getElementById('ob-step1').classList.remove('active');
+    document.getElementById('ob-step2').classList.add('active');
+    document.getElementById('od1').classList.remove('active');
+    document.getElementById('od2').classList.add('active');
+    document.getElementById('onboard-sub').textContent="Set your first goal";
+  } else if(step===2){
+    obGoalName=document.getElementById('ob-goal-name').value.trim();
+    obGoalTarget=parseFloat(document.getElementById('ob-goal-target').value)||0;
+    document.getElementById('ob-step2').classList.remove('active');
+    document.getElementById('ob-step3').classList.add('active');
+    document.getElementById('od2').classList.remove('active');
+    document.getElementById('od3').classList.add('active');
+    document.getElementById('onboard-sub').textContent="All set!";
+  }
 }
-
-// ── LOAD DATA ────────────────────────────────────────────────────
+function obSkip(step){obNext(step);}
+async function finishOnboard(){
+  if(obIncome>0){await sb.from('profiles').upsert({id:currentUser.id,monthly_income:obIncome});monthlyIncome=obIncome;}
+  if(obGoalName&&obGoalTarget>0){await sb.from('goals').insert({user_id:currentUser.id,name:obGoalName,target:obGoalTarget,current:0});}
+  await loadUserData();
+  show('s-app');switchTab('home');
+}
+ 
+// LOAD DATA
 async function loadUserData(){
   if(!currentUser)return;
   setGreeting(currentUser.name);
-
-  // Load transactions
-  const {data:txns}=await sb.from('transactions').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  const {data:txns}=await sb.from('transactions').select('*').eq('user_id',currentUser.id).order('date',{ascending:false}).order('created_at',{ascending:false});
   userTransactions=txns||[];
-
-  // Load goals
   const {data:goals}=await sb.from('goals').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   userGoals=goals||[];
-
-  // Load budgets
   const {data:budgets}=await sb.from('budgets').select('*').eq('user_id',currentUser.id);
-  userBudgets={};
-  (budgets||[]).forEach(b=>userBudgets[b.category]=b.amount);
-
-  updateDashboard();
-  updateSpending();
-  updateGoals();
-  updateAdvisorContext();
+  userBudgets={};(budgets||[]).forEach(b=>userBudgets[b.category]=b.amount);
+  const {data:profile}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
+  if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();
 }
-
-// ── DASHBOARD ────────────────────────────────────────────────────
+ 
+// DASHBOARD
 function updateDashboard(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{
-    const d=new Date(t.created_at);
-    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-  });
+  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
-  const saved=income-spent;
-  const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
-  const savingsRate=income>0?Math.round((saved/income)*100):0;
-
+  const totalIncome=monthlyIncome>0?monthlyIncome:income;
+  const saved=totalIncome-spent;
+  const savingsRate=totalIncome>0?Math.round((saved/totalIncome)*100):0;
+  const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0)+(monthlyIncome>0?(monthlyIncome-income):0);
   document.getElementById('net-worth-display').textContent=fmt(netWorth);
-  document.getElementById('savings-badge').textContent=
-    income>0?`↑ ${savingsRate}% savings rate · ${currentUser.name||'You'}'re doing great 🎉`:'Add transactions to see your net worth';
-  document.getElementById('stat-income').textContent=fmt(income);
+  document.getElementById('savings-badge').textContent=totalIncome>0?`↑ ${savingsRate}% savings rate · ${savingsRate>20?'Great job! 🎉':'Keep going! 💪'}`:'Add transactions to track progress';
+  document.getElementById('stat-income').textContent=fmt(totalIncome);
   document.getElementById('stat-spent').textContent=fmt(spent);
   document.getElementById('stat-saved').textContent=fmt(saved);
-  document.getElementById('stat-count').textContent=thisMonth.length;
-
-  // Recent 5 transactions
-  const recentHTML=userTransactions.slice(0,5).map(t=>`
-    <div class="tx-row">
-      <div class="tx-icon">${CAT_ICONS[t.category]||'💳'}</div>
-      <div style="flex:1;min-width:0">
-        <div class="tx-name">${t.name}</div>
-        <div class="tx-date">${new Date(t.created_at).toLocaleDateString()} · ${t.category}</div>
-      </div>
-      <div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div>
-    </div>`).join('');
-  document.getElementById('home-transactions').innerHTML=
-    recentHTML||'<div class="tx-row"><div style="font-size:13px;color:rgba(255,255,255,0.5);padding:8px 0;width:100%;text-align:center">No transactions yet</div></div>';
+  document.getElementById('stat-count').textContent=userTransactions.length;
+  updateSpendingChart();
+  updateHomeInsights(income,spent,saved,savingsRate);
+  const recent=userTransactions.slice(0,5);
+  const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
+  document.getElementById('home-transactions').innerHTML=rHTML||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>';
 }
-
-// ── SPENDING ─────────────────────────────────────────────────────
+ 
+function updateSpendingChart(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const data=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const m=d.getMonth();const y=d.getFullYear();
+    const monthTxns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getMonth()===m&&td.getFullYear()===y;});
+    const inc=(monthlyIncome>0?monthlyIncome:monthTxns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0));
+    const sp=monthTxns.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+    data.push({label:months[m],income:inc,spent:sp});
+  }
+  const maxVal=Math.max(...data.map(d=>Math.max(d.income,d.spent)),1);
+  const chartHTML=data.map(d=>`<div class="chart-bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;height:65px"><div style="width:12px;background:rgba(127,255,127,0.45);border-radius:3px 3px 0 0;height:${Math.max((d.income/maxVal)*65,2)}px"></div><div style="width:12px;background:rgba(255,150,80,0.5);border-radius:3px 3px 0 0;height:${Math.max((d.spent/maxVal)*65,2)}px"></div></div><div class="chart-label">${d.label}</div></div>`).join('');
+  document.getElementById('spending-chart').innerHTML=chartHTML;
+}
+ 
+function updateHomeInsights(income,spent,saved,savingsRate){
+  const insights=[];
+  const byCat={};
+  const now=new Date();
+  userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${cat} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${cat} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Ember →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${cat} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${cat} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+  if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
+  if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
+  if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Ember.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
+  document.getElementById('home-insights').innerHTML=insights.slice(0,3).join('');
+}
+ 
+function checkBudgetAlerts(){
+  const now=new Date();
+  const alerts=[];
+  const byCat={};
+  userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
+  document.getElementById('budget-alerts').innerHTML=alerts.join('');
+}
+ 
+// SPENDING
+let filteredTxns=null;
+function filterTransactions(){
+  const q=document.getElementById('tx-search').value.toLowerCase();
+  filteredTxns=q?userTransactions.filter(t=>t.name.toLowerCase().includes(q)||(t.category||'').toLowerCase().includes(q)):null;
+  renderAllTransactions();
+}
 function updateSpending(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{
-    const d=new Date(t.created_at);
-    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;
-  });
+  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;});
   const total=thisMonth.reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   document.getElementById('spend-total').textContent=fmt(total);
-  document.getElementById('spend-subtitle').textContent=
-    total>0?`This month's spending`:'No spending recorded this month';
-
-  // Group by category
+  document.getElementById('spend-subtitle').textContent=total>0?`This month's spending`:'No spending recorded this month';
   const byCat={};
-  thisMonth.forEach(t=>{
-    const cat=t.category||'Other';
-    byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));
-  });
-
-  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).map(([cat,amt])=>{
-    const budget=userBudgets[cat]||0;
-    const pct=budget>0?Math.min((amt/budget)*100,100):0;
-    const over=budget>0&&amt>budget;
-    return `<div class="cat-card glass">
-      <div class="cat-header">
-        <div class="cat-left">
-          <div class="cat-icon-box">${CAT_ICONS[cat]||'💳'}</div>
-          <div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':''}</div>
-        </div>
-        <div class="cat-right">
-          <div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div>
-          <div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget set'}</div>
-        </div>
-      </div>
-      ${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':'rgba(127,255,127,.7)'}"></div></div>`:''}
-    </div>`;
-  }).join(''):'<div class="glass" style="padding:16px;text-align:center;font-size:13px;color:rgba(255,255,255,0.5)">Add transactions to see categories</div>';
+  thisMonth.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=userBudgets[cat]||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div></div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
   document.getElementById('categories-list').innerHTML=catHTML;
-
-  // All transactions
-  const allHTML=userTransactions.map(t=>`
-    <div class="tx-row">
-      <div class="tx-icon">${CAT_ICONS[t.category]||'💳'}</div>
-      <div style="flex:1;min-width:0">
-        <div class="tx-name">${t.name}</div>
-        <div class="tx-date">${new Date(t.created_at).toLocaleDateString()} · ${t.category}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div>
-        <button class="btn-small btn-red" style="padding:4px 8px;font-size:10px" onclick="deleteTransaction('${t.id}')">✕</button>
-      </div>
-    </div>`).join('');
-  document.getElementById('all-transactions').innerHTML=
-    allHTML||'<div class="tx-row"><div style="font-size:13px;color:rgba(255,255,255,0.5);padding:8px 0;width:100%;text-align:center">No transactions yet</div></div>';
+  renderAllTransactions();
 }
-
-// ── GOALS ────────────────────────────────────────────────────────
-function updateGoals(){
-  const goalsHTML=userGoals.map(g=>{
-    const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
-    const left=parseFloat(g.target)-parseFloat(g.current);
-    return `<div class="goal-card glass">
-      <div class="goal-header">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="goal-icon-box">🎯</div>
-          <div><div class="goal-name">${g.name}</div><div class="goal-date">Target: ${g.deadline?new Date(g.deadline).toLocaleDateString():'No deadline'}</div></div>
-        </div>
-        <div>
-          <div class="goal-pct">${pct}%</div>
-          <button class="btn-small btn-red" style="margin-top:4px;padding:3px 8px;font-size:9px" onclick="deleteGoal('${g.id}')">✕</button>
-        </div>
-      </div>
-      <div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div>
-      <div class="goal-nums"><span>${fmt(g.current)} saved</span><span>${fmt(left)} left of ${fmt(g.target)}</span></div>
-      <div class="goal-cta" onclick="switchTab('advisor')">Ask Ember how to reach this faster →</div>
-    </div>`;
-  }).join('');
-  document.getElementById('goals-list').innerHTML=goalsHTML||
-    `<div class="glass" style="padding:20px;text-align:center">
-      <div style="font-size:32px;margin-bottom:8px">🎯</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:14px">No goals yet. Set your first financial goal!</div>
-      <button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button>
-    </div>`;
+function renderAllTransactions(){
+  const txns=filteredTxns||userTransactions;
+  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
+  document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
 }
-
-// ── ADD / DELETE ─────────────────────────────────────────────────
+ 
+// ADD / EDIT / DELETE TRANSACTIONS
 async function addTransaction(){
   const name=document.getElementById('tx-name').value.trim();
   const amount=parseFloat(document.getElementById('tx-amount').value);
   const type=document.getElementById('tx-type').value;
-  const category=document.getElementById('tx-category').value;
+  const category=document.getElementById('tx-category').value.trim()||'Other';
+  const date=document.getElementById('tx-date').value||new Date().toISOString().split('T')[0];
   if(!name||!amount){alert('Please fill in name and amount.');return;}
   const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
-  const {error}=await sb.from('transactions').insert({user_id:currentUser.id,name,amount:finalAmount,category});
+  const {error}=await sb.from('transactions').insert({user_id:currentUser.id,name,amount:finalAmount,category,date});
   if(error){alert('Error: '+error.message);return;}
-  document.getElementById('tx-name').value='';
-  document.getElementById('tx-amount').value='';
-  closeModal('modal-add-tx');
-  await loadUserData();
+  document.getElementById('tx-name').value='';document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='';
+  closeModal('modal-add-tx');await loadUserData();
 }
-
-async function deleteTransaction(id){
-  if(!confirm('Delete this transaction?'))return;
-  await sb.from('transactions').delete().eq('id',id);
-  await loadUserData();
+function openEditTx(id){
+  const t=userTransactions.find(x=>x.id===id);
+  if(!t)return;
+  document.getElementById('edit-tx-id').value=id;
+  document.getElementById('edit-tx-name').value=t.name;
+  document.getElementById('edit-tx-amount').value=Math.abs(t.amount);
+  document.getElementById('edit-tx-category').value=t.category||'';
+  openModal('modal-edit-tx');
 }
-
+async function saveEditTransaction(){
+  const id=document.getElementById('edit-tx-id').value;
+  const name=document.getElementById('edit-tx-name').value.trim();
+  const amount=parseFloat(document.getElementById('edit-tx-amount').value);
+  const category=document.getElementById('edit-tx-category').value.trim();
+  const orig=userTransactions.find(x=>x.id===id);
+  if(!orig)return;
+  const finalAmount=orig.amount<0?-Math.abs(amount):Math.abs(amount);
+  await sb.from('transactions').update({name,amount:finalAmount,category}).eq('id',id);
+  closeModal('modal-edit-tx');await loadUserData();
+}
+async function deleteTx(id){if(!confirm('Delete this transaction?'))return;await sb.from('transactions').delete().eq('id',id);await loadUserData();}
+ 
+// GOALS
+function updateGoals(){
+  const html=userGoals.map(g=>{
+    const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
+    const left=parseFloat(g.target)-parseFloat(g.current);
+    const isComplete=pct>=100;
+    return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${isComplete?'🏆':'🎯'}</div><div><div class="goal-name">${g.name}${isComplete?' ✓':''}</div><div class="goal-date">${g.deadline?new Date(g.deadline).toLocaleDateString():'No deadline'}</div></div></div><div style="text-align:right"><div class="goal-pct" style="color:${isComplete?'#7fff7f':'#fff'}">${pct}%</div></div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${isComplete?'linear-gradient(90deg,#7fff7f,#4dff4d)':'linear-gradient(90deg,rgba(255,255,255,0.5),#fff)'}"></div></div><div class="goal-nums"><span>${fmt(g.current)} saved</span><span>${isComplete?'Goal complete! 🎉':fmt(left)+' left of '+fmt(g.target)}</span></div><div class="goal-actions"><button class="btn-small btn-green" onclick="openContributeGoal('${g.id}','${g.name}')">+ Add Savings</button><button class="btn-small btn-blue" style="margin-left:4px" onclick="switchTab('advisor')">Ask Ember</button><button class="btn-small btn-red" style="margin-left:4px" onclick="deleteGoal('${g.id}')">✕</button></div></div>`;
+  }).join('');
+  document.getElementById('goals-list').innerHTML=html||`<div class="glass" style="padding:18px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎯</div><div style="font-size:13px;color:rgba(255,255,255,0.62);margin-bottom:12px">No goals yet. Set your first financial goal!</div><button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button></div>`;
+}
 async function addGoal(){
   const name=document.getElementById('goal-name').value.trim();
   const target=parseFloat(document.getElementById('goal-target').value);
   const current=parseFloat(document.getElementById('goal-current').value)||0;
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target){alert('Please fill in goal name and target amount.');return;}
-  const {error}=await sb.from('goals').insert({user_id:currentUser.id,name,target,current,deadline:deadline||null});
-  if(error){alert('Error: '+error.message);return;}
-  document.getElementById('goal-name').value='';
-  document.getElementById('goal-target').value='';
-  document.getElementById('goal-current').value='';
-  document.getElementById('goal-deadline').value='';
-  closeModal('modal-add-goal');
-  await loadUserData();
+  await sb.from('goals').insert({user_id:currentUser.id,name,target,current,deadline:deadline||null});
+  document.getElementById('goal-name').value='';document.getElementById('goal-target').value='';document.getElementById('goal-current').value='';document.getElementById('goal-deadline').value='';
+  closeModal('modal-add-goal');await loadUserData();
 }
-
-async function deleteGoal(id){
-  if(!confirm('Delete this goal?'))return;
-  await sb.from('goals').delete().eq('id',id);
-  await loadUserData();
+function openContributeGoal(id,name){
+  document.getElementById('contribute-goal-id').value=id;
+  document.getElementById('contribute-goal-name').textContent=`Adding savings to: ${name}`;
+  document.getElementById('contribute-amount').value='';
+  openModal('modal-contribute-goal');
 }
-
+async function contributeToGoal(){
+  const id=document.getElementById('contribute-goal-id').value;
+  const amount=parseFloat(document.getElementById('contribute-amount').value);
+  if(!amount||amount<=0){alert('Please enter a valid amount.');return;}
+  const goal=userGoals.find(g=>g.id===id);
+  if(!goal)return;
+  const newCurrent=parseFloat(goal.current)+amount;
+  await sb.from('goals').update({current:newCurrent}).eq('id',id);
+  closeModal('modal-contribute-goal');await loadUserData();
+}
+async function deleteGoal(id){if(!confirm('Delete this goal?'))return;await sb.from('goals').delete().eq('id',id);await loadUserData();}
 async function saveBudget(){
-  const category=document.getElementById('budget-category').value;
+  const category=document.getElementById('budget-category').value.trim();
   const amount=parseFloat(document.getElementById('budget-amount').value);
+  if(!category){alert('Please enter a category name.');return;}
   if(!amount){alert('Please enter a budget amount.');return;}
   await sb.from('budgets').upsert({user_id:currentUser.id,category,amount},{onConflict:'user_id,category'});
-  document.getElementById('budget-amount').value='';
-  closeModal('modal-add-budget');
-  await loadUserData();
+  document.getElementById('budget-category').value='';document.getElementById('budget-amount').value='';
+  closeModal('modal-add-budget');await loadUserData();
 }
-
-// ── TAB NAVIGATION ───────────────────────────────────────────────
+ 
+// PROFILE
+function updateProfile(){
+  document.getElementById('profile-name-display').textContent=currentUser.name||'User';
+  document.getElementById('profile-email-display').textContent=currentUser.email||'';
+  document.getElementById('income-display').textContent=monthlyIncome>0?`${fmt(monthlyIncome)}/month`:'Not set — tap to add';
+}
+async function editIncome(){
+  const val=prompt('Enter your monthly income ($):',monthlyIncome||'');
+  if(val===null)return;
+  const inc=parseFloat(val)||0;
+  await sb.from('profiles').upsert({id:currentUser.id,monthly_income:inc});
+  monthlyIncome=inc;
+  updateProfile();updateDashboard();
+}
+async function clearAllData(){
+  if(!confirm('Delete ALL your transactions and goals? This cannot be undone.'))return;
+  await sb.from('transactions').delete().eq('user_id',currentUser.id);
+  await sb.from('goals').delete().eq('user_id',currentUser.id);
+  await loadUserData();
+  alert('All data cleared.');
+}
+function exportCSV(){
+  if(userTransactions.length===0){alert('No transactions to export.');return;}
+  const header='Date,Name,Category,Amount\n';
+  const rows=userTransactions.map(t=>`${new Date(t.date||t.created_at).toLocaleDateString()},"${t.name}",${t.category||'Other'},${t.amount}`).join('\n');
+  const blob=new Blob([header+rows],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='ember-transactions.csv';a.click();
+}
+ 
+// MONTHLY SUMMARY
+function showMonthlySummary(){
+  const now=new Date();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
+  const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+  const saved=income-spent;
+  const savingsRate=income>0?Math.round((saved/income)*100):0;
+  const byCat={};
+  thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  const topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  const html=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:4px">${months[now.getMonth()]} ${now.getFullYear()}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(income)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Spent</div><div style="font-size:18px;font-weight:800">${fmt(spent)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Saved</div><div style="font-size:18px;font-weight:800;color:${saved>0?'#7fff7f':'#ff8877'}">${fmt(saved)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Rate</div><div style="font-size:18px;font-weight:800;color:${savingsRate>=20?'#7fff7f':'#fff'}">${savingsRate}%</div></div>
+    </div>
+    ${topCat?`<div class="glass" style="padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">Top spending category</div><div style="font-size:15px;font-weight:700">${getCatIcon(topCat[0])} ${topCat[0]} — ${fmt(topCat[1])}</div></div>`:''}
+    <div class="glass" style="padding:12px;margin-bottom:10px">
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:6px">Ember says</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6">${savingsRate>=30?'Outstanding month! A '+savingsRate+'% savings rate is exceptional.':savingsRate>=15?'Good progress! A '+savingsRate+'% savings rate shows strong discipline.':'This month was tough. Small changes add up — try setting a budget for your top spending category.'}</div>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+  `;
+  document.getElementById('monthly-summary-content').innerHTML=html;
+  openModal('modal-monthly-summary');
+}
+ 
+// TAB NAVIGATION
 function switchTab(tab){
-  ['home','spend','goals','advisor','plans'].forEach(t=>{
+  const tabs=['home','spend','goals','advisor','profile','plans'];
+  tabs.forEach(t=>{
     const el=document.getElementById('tab-'+t);
     const nav=document.getElementById('nav-'+t);
     if(el)el.style.display='none';
@@ -815,82 +977,61 @@ function switchTab(tab){
   if(active)active.style.display=tab==='advisor'?'flex':'block';
   if(activeNav)activeNav.classList.add('active');
 }
-
-// ── AI ADVISOR ───────────────────────────────────────────────────
-let aiContext = '';
+ 
+// AI ADVISOR
+let aiContext='';
 function updateAdvisorContext(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{
-    const d=new Date(t.created_at);
-    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-  });
-  const income=thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
+  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
   const byCat={};
-  thisMonth.filter(t=>t.amount<0).forEach(t=>{
-    const cat=t.category||'Other';
-    byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));
-  });
-  const catSummary=Object.entries(byCat).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join(', ');
-  const goalsSummary=userGoals.map(g=>`${g.name}: $${g.current}/$${g.target} (${Math.round((g.current/g.target)*100)}%)`).join(', ');
-  aiContext=`User: ${currentUser.name||'User'}
-Net Worth: $${netWorth.toFixed(2)}
-This Month — Income: $${income.toFixed(2)}, Spent: $${spent.toFixed(2)}, Saved: $${(income-spent).toFixed(2)}
-Savings Rate: ${income>0?Math.round(((income-spent)/income)*100):0}%
-Spending by Category: ${catSummary||'No spending recorded'}
-Goals: ${goalsSummary||'No goals set'}
-Total Transactions: ${userTransactions.length}`;
+  thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  const catStr=Object.entries(byCat).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join(', ');
+  const goalsStr=userGoals.map(g=>`${g.name}: $${g.current}/$${g.target} (${Math.round((parseFloat(g.current)/parseFloat(g.target))*100)}%)`).join(', ');
+  const budgetAlerts=Object.entries(byCat).filter(([cat,amt])=>userBudgets[cat]&&amt>userBudgets[cat]).map(([cat,amt])=>`${cat} OVER BUDGET by $${(amt-userBudgets[cat]).toFixed(2)}`).join(', ');
+  aiContext=`User: ${currentUser.name||'User'} | Net Worth: $${netWorth.toFixed(2)} | Monthly Income: $${income.toFixed(2)} | Spent This Month: $${spent.toFixed(2)} | Saved: $${(income-spent).toFixed(2)} | Savings Rate: ${income>0?Math.round(((income-spent)/income)*100):0}% | Spending: ${catStr||'None recorded'} | Goals: ${goalsStr||'None set'} | Budget Alerts: ${budgetAlerts||'None'} | Total Transactions: ${userTransactions.length}`;
 }
-
-const SYSTEM_PROMPT_BASE=`You are Ember, a warm brilliant personal finance coach. You speak like a trusted friend who genuinely cares. You have access to the user's real financial data. Keep responses to 2-4 sentences. Use their actual numbers. Be specific and actionable. Never say you're an AI or mention Claude or Anthropic. Always end responses with: "This is educational information, not financial advice."`;
-
+const SYS=`You are Ember, a warm brilliant personal finance coach. You speak like a trusted caring friend. You have the user's real financial data. Be specific with their numbers. Keep responses to 2-4 sentences unless more detail is asked for. Celebrate wins. Address problems kindly. Never mention Claude or Anthropic. Always end with: "This is educational information, not financial advice."`;
+function clearChat(){chatHistory=[];document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;}
 async function sendMessage(){
   const input=document.getElementById('chat-input');
-  const text=input.value.trim();
-  if(!text)return;
+  const text=input.value.trim();if(!text)return;
   input.value='';
-  const messages=document.getElementById('messages');
-  messages.innerHTML+=`<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${text}</div></div></div>`;
+  const msgs=document.getElementById('messages');
+  msgs.innerHTML+=`<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${text}</div></div></div>`;
+  chatHistory.push({role:'user',content:text});
   const tid='t'+Date.now();
-  messages.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
-  messages.scrollTop=messages.scrollHeight;
+  msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
+  msgs.scrollTop=msgs.scrollHeight;
   try{
-    const sysPrompt=SYSTEM_PROMPT_BASE+'\n\nUSER FINANCIAL DATA:\n'+aiContext;
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:sysPrompt,messages:[{role:'user',content:text}]})
-    });
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:SYS+'\n\nUSER DATA:\n'+aiContext,messages:chatHistory.slice(-10)})});
     const data=await res.json();
     const reply=data.content?.map(b=>b.text||'').join('')||'Let me think about that…';
     document.getElementById(tid).remove();
-    messages.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="msg-text-sage">${reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
-  }catch(e){
+    chatHistory.push({role:'assistant',content:reply});
+    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="msg-text-sage">${reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+  }catch{
     document.getElementById(tid).remove();
-    messages.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="msg-text-sage">Connection issue — please try again in a moment. This is educational information, not financial advice.</div></div></div>`;
+    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="msg-text-sage">Connection issue — try again in a moment. This is educational information, not financial advice.</div></div></div>`;
   }
-  messages.scrollTop=messages.scrollHeight;
+  msgs.scrollTop=msgs.scrollHeight;
 }
-
 function sendQuick(btn){document.getElementById('chat-input').value=btn.textContent;sendMessage();}
-
-// ── CHECK SESSION ON LOAD ────────────────────────────────────────
+ 
+// SESSION CHECK
 window.addEventListener('load',async()=>{
   const {data:{session}}=await sb.auth.getSession();
   if(session){
     currentUser=session.user;
     const {data:profile}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-    if(profile)currentUser.name=profile.name;
+    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
     await loadUserData();
     show('s-app');switchTab('home');
   }
 });
-
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});
-});
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});});
 </script>
 </body>
 </html>
