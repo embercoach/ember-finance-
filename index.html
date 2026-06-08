@@ -47,13 +47,13 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 .form-divider{text-align:center;color:rgba(255,255,255,0.55);font-size:13px;margin:10px 0}
 .error-msg{background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#ff8877;margin-bottom:12px;display:none}
 .success-msg{background:rgba(127,255,127,0.2);border:1px solid rgba(127,255,127,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#7fff7f;margin-bottom:12px;display:none}
- 
+
 /* ONBOARDING */
 .onboard-step{display:none}.onboard-step.active{display:block}
 .onboard-progress{display:flex;gap:6px;margin-bottom:24px;justify-content:center}
 .onboard-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all 0.3s}
 .onboard-dot.active{background:#fff;width:24px;border-radius:4px}
- 
+
 .app-shell{flex:1;display:flex;flex-direction:column;max-width:430px;margin:0 auto;width:100%}
 .top-bar{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center}
 .top-bar-name{font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,0.2)}
@@ -181,7 +181,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 <body>
 <div class="landing-bg"></div>
 <div class="app-bg" id="app-bg"></div>
- 
+
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-add-tx">
   <div class="modal glass-strong">
@@ -199,7 +199,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <button class="btn-primary" onclick="addTransaction()">Add Transaction ✓</button>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="modal-add-goal">
   <div class="modal glass-strong">
     <div class="modal-title">Add Goal <button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
@@ -214,7 +214,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <button class="btn-primary" onclick="addGoal()">Add Goal 🎯</button>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="modal-contribute-goal">
   <div class="modal glass-strong">
     <div class="modal-title">Add to Goal <button class="modal-close" onclick="closeModal('modal-contribute-goal')">×</button></div>
@@ -225,7 +225,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <button class="btn-primary" onclick="contributeToGoal()">Add Savings ✓</button>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="modal-add-budget">
   <div class="modal glass-strong">
     <div class="modal-title">Set Budget <button class="modal-close" onclick="closeModal('modal-add-budget')">×</button></div>
@@ -236,7 +236,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <button class="btn-primary" onclick="saveBudget()">Save Budget ✓</button>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="modal-edit-tx">
   <div class="modal glass-strong">
     <div class="modal-title">Edit Transaction <button class="modal-close" onclick="closeModal('modal-edit-tx')">×</button></div>
@@ -250,14 +250,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <button class="btn-primary" onclick="saveEditTransaction()">Save Changes ✓</button>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="modal-monthly-summary">
   <div class="modal glass-strong">
     <div class="modal-title">📊 Monthly Summary <button class="modal-close" onclick="closeModal('modal-monthly-summary')">×</button></div>
     <div id="monthly-summary-content"></div>
   </div>
 </div>
- 
+
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="landing">
@@ -279,7 +279,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </div>
   </div>
 </div>
- 
+
 <!-- SIGN UP -->
 <div class="screen" id="s-signup">
   <div class="auth-page">
@@ -300,7 +300,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </div>
   </div>
 </div>
- 
+
 <!-- LOGIN -->
 <div class="screen" id="s-login">
   <div class="auth-page">
@@ -319,7 +319,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </div>
   </div>
 </div>
- 
+
 <!-- ONBOARDING -->
 <div class="screen" id="s-onboard">
   <div class="auth-page">
@@ -358,11 +358,11 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </div>
   </div>
 </div>
- 
+
 <!-- MAIN APP -->
 <div class="screen" id="s-app">
   <div class="app-shell">
- 
+
     <!-- HOME TAB -->
     <div id="tab-home" class="tab-content">
       <div class="top-bar">
@@ -385,7 +385,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <div class="stat-card glass animate-in"><div class="stat-label">Saved</div><div class="stat-value" id="stat-saved">$0</div><div class="stat-sub">This month</div></div>
           <div class="stat-card glass animate-in"><div class="stat-label">Transactions</div><div class="stat-value" id="stat-count">0</div><div class="stat-sub">Total</div></div>
         </div>
- 
+
         <!-- Spending chart -->
         <div class="glass animate-in" style="padding:14px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -397,7 +397,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           </div>
           <div class="chart-bar-container" id="spending-chart"></div>
         </div>
- 
+
         <div class="section-label" style="margin-top:4px">Ember Notices</div>
         <div id="home-insights">
           <div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,0.7)" onclick="openModal('modal-add-tx')">
@@ -406,7 +406,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="insight-cta">ADD TRANSACTION →</div>
           </div>
         </div>
- 
+
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;margin-top:4px">
           <div class="section-label" style="margin:0">Recent</div>
           <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Add</button>
@@ -418,7 +418,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="height:8px"></div>
       </div>
     </div>
- 
+
     <!-- SPENDING TAB -->
     <div id="tab-spend" class="tab-content" style="display:none">
       <div class="page-pad" style="padding-top:20px">
@@ -430,20 +430,20 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Transaction</button>
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px" id="spend-subtitle">Add transactions to see your spending</div>
- 
+
         <input class="search-bar" id="tx-search" placeholder="🔍 Search transactions..." oninput="filterTransactions()">
- 
+
         <div style="display:flex;gap:8px;margin-bottom:12px">
           <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-tx')">+ Add Transaction</button>
           <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-budget')">⚙ Set Budget</button>
         </div>
- 
+
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="section-label" style="margin:0">By Category</div>
           <button class="btn-small btn-blue" style="cursor:pointer" onclick="openModal('modal-add-budget')">⚙ Set Budgets</button>
         </div>
         <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div></div>
- 
+
         <div class="section-label" style="margin-top:12px">All Transactions</div>
         <div class="tx-card glass" id="all-transactions">
           <div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
@@ -452,7 +452,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="height:8px"></div>
       </div>
     </div>
- 
+
     <!-- GOALS TAB -->
     <div id="tab-goals" class="tab-content" style="display:none">
       <div class="page-pad" style="padding-top:20px">
@@ -483,7 +483,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="height:8px"></div>
       </div>
     </div>
- 
+
     <!-- ADVISOR TAB -->
     <div id="tab-advisor" class="tab-content" style="display:none;flex-direction:column;height:calc(100vh - 57px)">
       <div class="advisor-header">
@@ -521,19 +521,19 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div class="chat-disclaimer">Educational purposes only · Not financial advice · Not a licensed financial adviser</div>
       </div>
     </div>
- 
+
     <!-- PROFILE TAB -->
     <div id="tab-profile" class="tab-content" style="display:none">
       <div class="page-pad" style="padding-top:20px">
         <div class="section-label">Profile & Settings</div>
- 
+
         <!-- Profile card -->
         <div class="glass animate-in" style="padding:20px;margin-bottom:12px;text-align:center">
           <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid rgba(255,255,255,0.25)">👤</div>
           <div style="font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;margin-bottom:4px" id="profile-name-display">Loading...</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.55)" id="profile-email-display">...</div>
         </div>
- 
+
         <!-- Monthly income -->
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
           <div class="profile-item" onclick="editIncome()">
@@ -549,7 +549,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
         </div>
- 
+
         <!-- Account actions -->
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
           <div class="profile-item" onclick="switchTab('plans')">
@@ -565,14 +565,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
           </div>
         </div>
- 
+
         <div style="text-align:center;padding:12px 0;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.8;font-weight:500">
           Ember v2.0 · Educational purposes only<br>Not financial advice · Not a licensed financial adviser<br>Your data is encrypted and secure
         </div>
         <div style="height:8px"></div>
       </div>
     </div>
- 
+
     <!-- PLANS TAB -->
     <div id="tab-plans" class="tab-content" style="display:none">
       <div style="padding:30px 18px 20px;text-align:center">
@@ -622,7 +622,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="height:8px"></div>
       </div>
     </div>
- 
+
     <nav class="bottom-nav">
       <button class="nav-btn active" id="nav-home" onclick="switchTab('home')"><span class="nav-icon">🏠</span>Home</button>
       <button class="nav-btn" id="nav-spend" onclick="switchTab('spend')"><span class="nav-icon">📊</span>Spending</button>
@@ -632,7 +632,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </nav>
   </div>
 </div>
- 
+
 <script>
 const SUPA_URL='https://jjftkkpzyzojtxulpfcj.supabase.co';
 const SUPA_KEY='sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
@@ -653,7 +653,7 @@ function show(id){
 function openModal(id){document.getElementById(id).classList.add('active');const inp=document.querySelector(`#${id} input[type="date"]`);if(inp&&!inp.value)inp.value=new Date().toISOString().split('T')[0];}
 function closeModal(id){document.getElementById(id).classList.remove('active')}
 function setGreeting(name){const h=new Date().getHours();const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';const displayName=name||currentUser?.email?.split('@')[0]||'';document.getElementById('greeting').textContent=`${g}${displayName?', '+displayName:''}! 👋`}
- 
+
 // AUTH
 async function doSignup(){
   const name=document.getElementById('signup-name').value.trim();
@@ -692,7 +692,7 @@ async function doLogin(){
   btn.textContent='Sign In 🌿';btn.disabled=false;
 }
 async function doLogout(){await sb.auth.signOut();currentUser=null;userTransactions=[];userGoals=[];userBudgets={};monthlyIncome=0;show('s-landing');}
- 
+
 // ONBOARDING
 let obIncome=0,obGoalName='',obGoalTarget=0;
 function obNext(step){
@@ -720,7 +720,7 @@ async function finishOnboard(){
   await loadUserData();
   show('s-app');switchTab('home');
 }
- 
+
 // LOAD DATA
 async function loadUserData(){
   if(!currentUser)return;
@@ -735,7 +735,7 @@ async function loadUserData(){
   if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
   updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();
 }
- 
+
 // DASHBOARD
 function updateDashboard(){
   const now=new Date();
@@ -758,7 +758,7 @@ function updateDashboard(){
   const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
   document.getElementById('home-transactions').innerHTML=rHTML||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>';
 }
- 
+
 function updateSpendingChart(){
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const now=new Date();
@@ -775,7 +775,7 @@ function updateSpendingChart(){
   const chartHTML=data.map(d=>`<div class="chart-bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;height:65px"><div style="width:12px;background:rgba(127,255,127,0.45);border-radius:3px 3px 0 0;height:${Math.max((d.income/maxVal)*65,2)}px"></div><div style="width:12px;background:rgba(255,150,80,0.5);border-radius:3px 3px 0 0;height:${Math.max((d.spent/maxVal)*65,2)}px"></div></div><div class="chart-label">${d.label}</div></div>`).join('');
   document.getElementById('spending-chart').innerHTML=chartHTML;
 }
- 
+
 function updateHomeInsights(income,spent,saved,savingsRate){
   const insights=[];
   const byCat={};
@@ -787,7 +787,7 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Ember.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
   document.getElementById('home-insights').innerHTML=insights.slice(0,3).join('');
 }
- 
+
 function checkBudgetAlerts(){
   const now=new Date();
   const alerts=[];
@@ -796,7 +796,7 @@ function checkBudgetAlerts(){
   Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
 }
- 
+
 // SPENDING
 let filteredTxns=null;
 function filterTransactions(){
@@ -821,7 +821,7 @@ function renderAllTransactions(){
   const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
   document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
 }
- 
+
 // ADD / EDIT / DELETE TRANSACTIONS
 async function addTransaction(){
   const name=document.getElementById('tx-name').value.trim();
@@ -857,7 +857,7 @@ async function saveEditTransaction(){
   closeModal('modal-edit-tx');await loadUserData();
 }
 async function deleteTx(id){if(!confirm('Delete this transaction?'))return;await sb.from('transactions').delete().eq('id',id);await loadUserData();}
- 
+
 // GOALS
 function updateGoals(){
   const html=userGoals.map(g=>{
@@ -904,7 +904,7 @@ async function saveBudget(){
   document.getElementById('budget-category').value='';document.getElementById('budget-amount').value='';
   closeModal('modal-add-budget');await loadUserData();
 }
- 
+
 // PROFILE
 function updateProfile(){
   document.getElementById('profile-name-display').textContent=currentUser.name||currentUser.email?.split('@')[0]||'User';
@@ -934,7 +934,7 @@ function exportCSV(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='ember-transactions.csv';a.click();
 }
- 
+
 // MONTHLY SUMMARY
 function showMonthlySummary(){
   const now=new Date();
@@ -967,7 +967,7 @@ function showMonthlySummary(){
   document.getElementById('monthly-summary-content').innerHTML=html;
   openModal('modal-monthly-summary');
 }
- 
+
 // TAB NAVIGATION
 function switchTab(tab){
   const tabs=['home','spend','goals','advisor','profile','plans'];
@@ -982,7 +982,7 @@ function switchTab(tab){
   if(active)active.style.display=tab==='advisor'?'flex':'block';
   if(activeNav)activeNav.classList.add('active');
 }
- 
+
 // AI ADVISOR
 let aiContext='';
 function updateAdvisorContext(){
@@ -1011,7 +1011,7 @@ async function sendMessage(){
   msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Ember</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
   msgs.scrollTop=msgs.scrollHeight;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:SYS+'\n\nUSER DATA:\n'+aiContext,messages:chatHistory.slice(-10)})});
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:SYS+'\n\nUSER DATA:\n'+aiContext,messages:chatHistory.slice(-10)})});
     const data=await res.json();
     const reply=data.content?.map(b=>b.text||'').join('')||'Let me think about that…';
     document.getElementById(tid).remove();
@@ -1024,7 +1024,7 @@ async function sendMessage(){
   msgs.scrollTop=msgs.scrollHeight;
 }
 function sendQuick(btn){document.getElementById('chat-input').value=btn.textContent;sendMessage();}
- 
+
 // SESSION CHECK
 window.addEventListener('load',async()=>{
   const {data:{session}}=await sb.auth.getSession();
