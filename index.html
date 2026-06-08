@@ -433,9 +433,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
  
         <input class="search-bar" id="tx-search" placeholder="🔍 Search transactions..." oninput="filterTransactions()">
  
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-tx')">+ Add Transaction</button>
+          <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-budget')">⚙ Set Budget</button>
+        </div>
+ 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="section-label" style="margin:0">By Category</div>
-          <button class="btn-small btn-blue" onclick="openModal('modal-add-budget')">⚙ Budgets</button>
+          <button class="btn-small btn-blue" style="cursor:pointer" onclick="openModal('modal-add-budget')">⚙ Set Budgets</button>
         </div>
         <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div></div>
  
@@ -807,7 +812,7 @@ function updateSpending(){
   document.getElementById('spend-subtitle').textContent=total>0?`This month's spending`:'No spending recorded this month';
   const byCat={};
   thisMonth.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=userBudgets[cat]||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div></div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
+  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=userBudgets[cat]||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
   document.getElementById('categories-list').innerHTML=catHTML;
   renderAllTransactions();
 }
