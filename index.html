@@ -852,18 +852,20 @@ function updateSpendingForecast(){
   el.textContent=`📈 At this pace, you'll spend about ${fmt(projected)} this month`;
 }
 
-// CHART FULL BREAKDOWN — matches the active Daily/Weekly/Monthly range
-function buildChartPeriods(){
+// CHART FULL BREAKDOWN — own Daily/Weekly/Monthly switcher inside the detail view
+let detailRange='daily';
+function buildChartPeriods(range){
+  range=range||detailRange;
   const now=new Date();
   const periods=[];
-  if(chartRange==='daily'){
+  if(range==='daily'){
     const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     for(let i=6;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
       const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
       periods.push({label:`${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`,txns});
     }
-  } else if(chartRange==='weekly'){
+  } else if(range==='weekly'){
     for(let i=5;i>=0;i--){
       const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7));
       const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7)-6);
@@ -885,9 +887,20 @@ function buildChartPeriods(){
 }
 
 function openChartDetail(){
-  const periods=buildChartPeriods();
-  const rangeLabel=chartRange.charAt(0).toUpperCase()+chartRange.slice(1);
-  const unit=chartRange==='daily'?'days':chartRange==='weekly'?'weeks':'months';
+  detailRange=chartRange; // start on whatever the home chart is showing
+  renderChartDetail();
+  switchTab('statdetail');
+  document.getElementById('nav-home').classList.add('active');
+}
+
+function setDetailRange(range){
+  detailRange=range;
+  renderChartDetail();
+}
+
+function renderChartDetail(){
+  const periods=buildChartPeriods(detailRange);
+  const unit=detailRange==='daily'?'days':detailRange==='weekly'?'weeks':'months';
   let grandSpent=0,grandIncome=0;
   periods.forEach(p=>{
     p.income=p.txns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
@@ -897,10 +910,17 @@ function openChartDetail(){
   const avgSpent=periods.length>0?grandSpent/periods.length:0;
   const biggest=periods.reduce((max,p)=>p.spent>max.spent?p:max,{spent:0,label:'—'});
 
-  let content=`<div class="glass" style="padding:14px;margin-bottom:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  // Range switcher inside the detail view
+  let content=`<div style="display:flex;gap:6px;margin-bottom:12px">
+    <button class="chart-tab ${detailRange==='daily'?'active':''}" onclick="setDetailRange('daily')">Daily</button>
+    <button class="chart-tab ${detailRange==='weekly'?'active':''}" onclick="setDetailRange('weekly')">Weekly</button>
+    <button class="chart-tab ${detailRange==='monthly'?'active':''}" onclick="setDetailRange('monthly')">Monthly</button>
+  </div>`;
+
+  content+=`<div class="glass" style="padding:14px;margin-bottom:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Spent</div><div style="font-size:18px;font-weight:800">${fmt(grandSpent)}</div></div>
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(grandIncome)}</div></div>
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / period</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / ${unit.slice(0,-1)}</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.label}</div></div>
   </div></div>`;
 
@@ -908,7 +928,7 @@ function openChartDetail(){
     const net=p.income-p.spent;
     const txHtml=p.txns.length>0
       ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
-      : `<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:6px 2px">No activity this ${chartRange==='daily'?'day':chartRange==='weekly'?'week':'month'}</div>`;
+      : `<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:6px 2px">No activity this ${detailRange==='daily'?'day':detailRange==='weekly'?'week':'month'}</div>`;
     return `<div class="glass" style="padding:13px 15px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="font-weight:800;font-size:14px">${p.label}</div>
@@ -919,11 +939,9 @@ function openChartDetail(){
     </div>`;
   }).join('');
 
-  document.getElementById('statdetail-title').textContent=`${rangeLabel} Breakdown`;
+  document.getElementById('statdetail-title').textContent='Spending Breakdown';
   document.getElementById('statdetail-sub').textContent=`${fmt(grandSpent)} spent over ${periods.length} ${unit}`;
   document.getElementById('statdetail-content').innerHTML=content;
-  switchTab('statdetail');
-  document.getElementById('nav-home').classList.add('active');
 }
 
 function updateHomeInsights(income,spent,saved,savingsRate){
