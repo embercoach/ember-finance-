@@ -404,8 +404,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
               <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(255,150,80,0.5);display:inline-block"></span>Spent</span>
             </div>
           </div>
-          <div class="chart-bar-container" id="spending-chart"></div>
+          <div class="chart-bar-container" id="spending-chart" style="cursor:pointer" onclick="openChartDetail()"></div>
           <div id="spending-forecast" style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:6px;font-weight:600"></div>
+          <div onclick="openChartDetail()" style="text-align:center;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#7fff7f;cursor:pointer">View Full Breakdown →</div>
         </div>
 
         <div class="section-label" style="margin-top:4px">Thrive AI Notices</div>
@@ -849,6 +850,80 @@ function updateSpendingForecast(){
   if(spentSoFar<=0||dayOfMonth<2){el.textContent='';return;}
   const projected=(spentSoFar/dayOfMonth)*daysInMonth;
   el.textContent=`📈 At this pace, you'll spend about ${fmt(projected)} this month`;
+}
+
+// CHART FULL BREAKDOWN — matches the active Daily/Weekly/Monthly range
+function buildChartPeriods(){
+  const now=new Date();
+  const periods=[];
+  if(chartRange==='daily'){
+    const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for(let i=6;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
+      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
+      periods.push({label:`${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`,txns});
+    }
+  } else if(chartRange==='weekly'){
+    for(let i=5;i>=0;i--){
+      const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7));
+      const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7)-6);
+      const s=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+      const e=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td>=s&&td<=e;});
+      periods.push({label:i===0?'This week':`Week of ${start.getDate()}/${start.getMonth()+1}`,txns});
+    }
+  } else {
+    const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    for(let i=5;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const m=d.getMonth();const y=d.getFullYear();
+      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getMonth()===m&&td.getFullYear()===y;});
+      periods.push({label:`${months[m]} ${y}`,txns});
+    }
+  }
+  return periods;
+}
+
+function openChartDetail(){
+  const periods=buildChartPeriods();
+  const rangeLabel=chartRange.charAt(0).toUpperCase()+chartRange.slice(1);
+  const unit=chartRange==='daily'?'days':chartRange==='weekly'?'weeks':'months';
+  let grandSpent=0,grandIncome=0;
+  periods.forEach(p=>{
+    p.income=p.txns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
+    p.spent=p.txns.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+    grandSpent+=p.spent;grandIncome+=p.income;
+  });
+  const avgSpent=periods.length>0?grandSpent/periods.length:0;
+  const biggest=periods.reduce((max,p)=>p.spent>max.spent?p:max,{spent:0,label:'—'});
+
+  let content=`<div class="glass" style="padding:14px;margin-bottom:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Spent</div><div style="font-size:18px;font-weight:800">${fmt(grandSpent)}</div></div>
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(grandIncome)}</div></div>
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / period</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.label}</div></div>
+  </div></div>`;
+
+  content+=periods.slice().reverse().map(p=>{
+    const net=p.income-p.spent;
+    const txHtml=p.txns.length>0
+      ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
+      : `<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:6px 2px">No activity this ${chartRange==='daily'?'day':chartRange==='weekly'?'week':'month'}</div>`;
+    return `<div class="glass" style="padding:13px 15px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="font-weight:800;font-size:14px">${p.label}</div>
+        <div style="text-align:right"><div style="font-size:11px;color:#7fff7f;font-weight:700">+${fmt(p.income)} in</div><div style="font-size:11px;color:rgba(255,150,80,0.95);font-weight:700">−${fmt(p.spent)} out</div></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px">Net: <span style="color:${net>=0?'#7fff7f':'#ff8877'};font-weight:800">${net>=0?'+':'−'}${fmt(net)}</span></div>
+      ${txHtml}
+    </div>`;
+  }).join('');
+
+  document.getElementById('statdetail-title').textContent=`${rangeLabel} Breakdown`;
+  document.getElementById('statdetail-sub').textContent=`${fmt(grandSpent)} spent over ${periods.length} ${unit}`;
+  document.getElementById('statdetail-content').innerHTML=content;
+  switchTab('statdetail');
+  document.getElementById('nav-home').classList.add('active');
 }
 
 function updateHomeInsights(income,spent,saved,savingsRate){
