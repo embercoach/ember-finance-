@@ -154,6 +154,11 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 .alert-banner{margin:8px 18px 0;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:600;display:none}
 .alert-warning{background:rgba(255,200,50,0.2);border:1px solid rgba(255,200,50,0.35);color:#ffd84f}
 .alert-danger{background:rgba(255,100,80,0.2);border:1px solid rgba(255,100,80,0.3);color:#ff8877}
+.celebrate-banner{position:relative;background:linear-gradient(135deg,rgba(127,255,127,0.22),rgba(100,200,255,0.18));border:1px solid rgba(127,255,127,0.4);border-radius:14px;padding:13px 38px 13px 15px;margin-bottom:8px;animation:fadeUp 0.5s cubic-bezier(.22,1,.36,1) both}
+.celebrate-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px}
+.celebrate-body{font-size:12px;color:rgba(255,255,255,0.82);line-height:1.5}
+.celebrate-close{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.celebrate-close:hover{background:rgba(255,255,255,0.28)}
 .search-bar{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 14px;font-size:13px;font-family:'Nunito',sans-serif;color:#fff;outline:none;width:100%;margin-bottom:12px}
 .search-bar::placeholder{color:rgba(255,255,255,0.35)}
 .chart-bar-container{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px;margin-bottom:8px}
@@ -377,6 +382,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <span style="font-size:20px;cursor:pointer" onclick="switchTab('profile')">👤</span>
         </div>
       </div>
+      <div id="celebrations" style="margin:8px 18px 0"></div>
       <div id="budget-alerts" style="margin:8px 18px 0"></div>
       <div class="page-pad">
         <div class="hero-card glass animate-in" style="margin-top:12px">
@@ -760,7 +766,7 @@ async function loadUserData(){
   userBudgets={};(budgets||[]).forEach(b=>userBudgets[b.category]=b.amount);
   const {data:profile}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
   if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();
 }
 
 // DASHBOARD
@@ -963,6 +969,67 @@ function checkBudgetAlerts(){
   userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
   Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
+}
+
+// MILESTONE CELEBRATIONS — dismissable, persist per user via localStorage
+function dismissedKey(){return 'thrive_dismissed_'+(currentUser?currentUser.id:'anon');}
+function getDismissed(){
+  try{return JSON.parse(localStorage.getItem(dismissedKey()))||[];}catch(e){return [];}
+}
+function dismissCelebration(id){
+  const d=getDismissed();
+  if(!d.includes(id)){d.push(id);try{localStorage.setItem(dismissedKey(),JSON.stringify(d));}catch(e){}}
+  checkCelebrations();
+}
+function checkCelebrations(){
+  const el=document.getElementById('celebrations');
+  if(!el)return;
+  const dismissed=getDismissed();
+  const cels=[];
+
+  // Goal milestones: 50 / 75 / 100
+  userGoals.forEach(g=>{
+    const pct=Math.round((parseFloat(g.current)/parseFloat(g.target))*100);
+    let tier=null;
+    if(pct>=100)tier=100; else if(pct>=75)tier=75; else if(pct>=50)tier=50;
+    if(tier){
+      const id=`goal_${g.id}_${tier}`;
+      if(!dismissed.includes(id)){
+        const msg=tier===100
+          ? `You hit your "${g.name}" goal — ${fmt(g.target)} saved. Incredible work. 🏆`
+          : `You're ${tier}% of the way to "${g.name}". Only ${fmt(parseFloat(g.target)-parseFloat(g.current))} to go — keep going! 💪`;
+        cels.push({id,title:tier===100?'🎉 Goal Complete!':`🎯 ${tier}% to Your Goal!`,body:msg});
+      }
+    }
+  });
+
+  // Strong savings month
+  const now=new Date();
+  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
+  const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+  const rate=income>0?Math.round(((income-spent)/income)*100):0;
+  if(rate>=40){
+    const id=`savings_${now.getFullYear()}_${now.getMonth()}_40`;
+    if(!dismissed.includes(id)){
+      cels.push({id,title:'🌟 Outstanding Savings Month!',body:`You're saving ${rate}% of your income this month — that's exceptional. Future you says thank you.`});
+    }
+  }
+
+  // Under budget across all set categories (only if budgets exist and at least one transaction)
+  if(Object.keys(userBudgets).length>0 && thisMonth.length>0){
+    const byCat={};
+    thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+    const allUnder=Object.keys(userBudgets).every(cat=>(byCat[cat]||0)<=userBudgets[cat]);
+    if(allUnder){
+      const id=`underbudget_${now.getFullYear()}_${now.getMonth()}`;
+      if(!dismissed.includes(id)){
+        cels.push({id,title:'✅ Under Budget!',body:`You're within every budget you've set this month. That's real discipline — nicely done.`});
+      }
+    }
+  }
+
+  el.innerHTML=cels.slice(0,2).map(c=>`<div class="celebrate-banner"><button class="celebrate-close" onclick="dismissCelebration('${c.id}')">×</button><div class="celebrate-title">${c.title}</div><div class="celebrate-body">${c.body}</div></div>`).join('');
 }
 
 // SPENDING
