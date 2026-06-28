@@ -198,7 +198,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <div class="modal-title">Add Transaction <button class="modal-close" onclick="closeModal('modal-add-tx')">×</button></div>
     <label class="form-label">Name</label>
     <input class="form-input" id="tx-name" placeholder="e.g. Grocery Shopping">
-    <label class="form-label">Amount ($)</label>
+    <label class="form-label">Amount (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="tx-amount" type="number" placeholder="0.00" step="0.01">
     <label class="form-label">Type</label>
     <select class="form-select" id="tx-type"><option value="expense">Expense</option><option value="income">Income</option></select>
@@ -215,9 +215,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <div class="modal-title">Add Goal <button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
     <label class="form-label">Goal Name</label>
     <input class="form-input" id="goal-name" placeholder="e.g. Emergency Fund">
-    <label class="form-label">Target Amount ($)</label>
+    <label class="form-label">Target Amount (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="goal-target" type="number" placeholder="5000">
-    <label class="form-label">Current Savings ($)</label>
+    <label class="form-label">Current Savings (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="goal-current" type="number" placeholder="0">
     <label class="form-label">Target Date</label>
     <input class="form-input" id="goal-deadline" type="date">
@@ -230,7 +230,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <div class="modal-title">Add to Goal <button class="modal-close" onclick="closeModal('modal-contribute-goal')">×</button></div>
     <input type="hidden" id="contribute-goal-id">
     <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px" id="contribute-goal-name"></p>
-    <label class="form-label">Amount to Add ($)</label>
+    <label class="form-label">Amount to Add (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="contribute-amount" type="number" placeholder="100">
     <button class="btn-primary" onclick="contributeToGoal()">Add Savings ✓</button>
   </div>
@@ -241,7 +241,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <div class="modal-title">Set Budget <button class="modal-close" onclick="closeModal('modal-add-budget')">×</button></div>
     <label class="form-label">Category Name</label>
     <input class="form-input" id="budget-category" placeholder="e.g. Food, Clothing, Gym...">
-    <label class="form-label">Monthly Budget ($)</label>
+    <label class="form-label">Monthly Budget (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="budget-amount" type="number" placeholder="500">
     <button class="btn-primary" onclick="saveBudget()">Save Budget ✓</button>
   </div>
@@ -253,7 +253,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <input type="hidden" id="edit-tx-id">
     <label class="form-label">Name</label>
     <input class="form-input" id="edit-tx-name" placeholder="Transaction name">
-    <label class="form-label">Amount ($)</label>
+    <label class="form-label">Amount (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="edit-tx-amount" type="number" step="0.01">
     <label class="form-label">Category</label>
     <input class="form-input" id="edit-tx-category" placeholder="Category">
@@ -265,6 +265,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   <div class="modal glass-strong">
     <div class="modal-title">📊 Monthly Summary <button class="modal-close" onclick="closeModal('modal-monthly-summary')">×</button></div>
     <div id="monthly-summary-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-currency">
+  <div class="modal glass-strong">
+    <div class="modal-title">💱 Currency <button class="modal-close" onclick="closeModal('modal-currency')">×</button></div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:14px">Choose the currency your amounts are shown in. Default is USD.</p>
+    <div id="currency-options"></div>
   </div>
 </div>
 
@@ -342,7 +350,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div class="onboard-dot" id="od3"></div>
       </div>
       <div class="onboard-step active" id="ob-step1">
-        <label class="form-label">What's your monthly income? ($)</label>
+        <label class="form-label">What's your monthly income? (<span class="cur-sym">$</span>)</label>
         <input class="form-input" id="ob-income" type="number" placeholder="e.g. 3000">
         <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">This helps Thrive AI calculate your savings rate accurately.</div>
         <button class="btn-primary" onclick="obNext(1)">Next →</button>
@@ -350,7 +358,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <div class="onboard-step" id="ob-step2">
         <label class="form-label">What's your first savings goal?</label>
         <input class="form-input" id="ob-goal-name" placeholder="e.g. Emergency Fund, Vacation...">
-        <label class="form-label">Target Amount ($)</label>
+        <label class="form-label">Target Amount (<span class="cur-sym">$</span>)</label>
         <input class="form-input" id="ob-goal-target" type="number" placeholder="5000">
         <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">You can add more goals later.</div>
         <button class="btn-primary" onclick="obNext(2)">Next →</button>
@@ -557,6 +565,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div><div class="profile-label">💰 Monthly Income</div><div class="profile-sub" id="income-display">Not set</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
+          <div class="profile-item" onclick="openModal('modal-currency')">
+            <div><div class="profile-label">💱 Currency</div><div class="profile-sub" id="currency-display">US Dollar (USD)</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
           <div class="profile-item" onclick="showMonthlySummary()">
             <div><div class="profile-label">📊 Monthly Summary</div><div class="profile-sub">View this month's full report</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
@@ -673,9 +685,24 @@ const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
 let chatHistory=[];
+// CURRENCY — single source of truth. USD is the default; the app is no longer hardcoded to it.
+const CURRENCIES={
+  USD:{symbol:'$',locale:'en-US',label:'US Dollar (USD)'},
+  ZAR:{symbol:'R',locale:'en-ZA',label:'South African Rand (ZAR)'},
+  EUR:{symbol:'€',locale:'en-IE',label:'Euro (EUR)'},
+  GBP:{symbol:'£',locale:'en-GB',label:'British Pound (GBP)'},
+  AUD:{symbol:'A$',locale:'en-AU',label:'Australian Dollar (AUD)'},
+  CAD:{symbol:'C$',locale:'en-CA',label:'Canadian Dollar (CAD)'},
+  INR:{symbol:'₹',locale:'en-IN',label:'Indian Rupee (INR)'},
+  NGN:{symbol:'₦',locale:'en-NG',label:'Nigerian Naira (NGN)'}
+};
+let userCurrency='USD';
+function curCfg(){return CURRENCIES[userCurrency]||CURRENCIES.USD;}
+function curSym(){return curCfg().symbol;}
 const CAT_ICONS={Food:'🍽️',Housing:'🏠',Transport:'🚗',Entertainment:'🎬',Health:'💊',Subscriptions:'📱',Income:'💰',Salary:'💰',Other:'💳',Shopping:'🛍️',Clothing:'👕',Education:'📚',Gym:'💪',Kids:'👶',Travel:'✈️',Utilities:'⚡',Insurance:'🛡️'};
 function getCatIcon(cat){return CAT_ICONS[cat]||'💳'}
-function fmt(n){return '$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmt(n){const c=curCfg();return c.symbol+Math.abs(parseFloat(n)||0).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function applyCurrencyLabels(){document.querySelectorAll('.cur-sym').forEach(s=>s.textContent=curSym());}
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -718,7 +745,7 @@ async function doLogin(){
   if(data.user){
     currentUser=data.user;
     const {data:profile}=await sb.from('profiles').select('*').eq('id',data.user.id).single();
-    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
+    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
     await loadUserData();
     show('s-app');switchTab('home');
   }
@@ -765,7 +792,7 @@ async function loadUserData(){
   const {data:budgets}=await sb.from('budgets').select('*').eq('user_id',currentUser.id);
   userBudgets={};(budgets||[]).forEach(b=>userBudgets[b.category]=b.amount);
   const {data:profile}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
-  if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
+  if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
   updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();
 }
 
@@ -1066,7 +1093,7 @@ async function addTransaction(){
   const date=document.getElementById('tx-date').value||new Date().toISOString().split('T')[0];
   if(!name||!amount){alert('Please fill in name and amount.');return;}
   const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
-  const {error}=await sb.from('transactions').insert({user_id:currentUser.id,name,amount:finalAmount,category,date});
+  const {error}=await sb.from('transactions').insert({user_id:currentUser.id,name,amount:finalAmount,category,date,currency:userCurrency});
   if(error){alert('Error: '+error.message);return;}
   document.getElementById('tx-name').value='';document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='';
   closeModal('modal-add-tx');await loadUserData();
@@ -1145,9 +1172,30 @@ function updateProfile(){
   document.getElementById('profile-name-display').textContent=currentUser.name||currentUser.email?.split('@')[0]||'User';
   document.getElementById('profile-email-display').textContent=currentUser.email||'';
   document.getElementById('income-display').textContent=monthlyIncome>0?`${fmt(monthlyIncome)}/month`:'Not set — tap to add';
+  const cd=document.getElementById('currency-display');
+  if(cd)cd.textContent=curCfg().label;
+  renderCurrencyOptions();
+  applyCurrencyLabels();
+}
+function renderCurrencyOptions(){
+  const box=document.getElementById('currency-options');
+  if(!box)return;
+  box.innerHTML=Object.keys(CURRENCIES).map(code=>{
+    const active=code===userCurrency;
+    return `<div onclick="setCurrency('${code}')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;margin-bottom:7px;cursor:pointer;background:${active?'rgba(127,255,127,0.16)':'rgba(255,255,255,0.07)'};border:1px solid ${active?'rgba(127,255,127,0.4)':'rgba(255,255,255,0.12)'}"><span style="font-size:13px;font-weight:600;color:#fff">${CURRENCIES[code].symbol} &nbsp; ${CURRENCIES[code].label}</span>${active?'<span style="color:#7fff7f;font-size:14px">✓</span>':''}</div>`;
+  }).join('');
+}
+async function setCurrency(code){
+  if(!CURRENCIES[code])return;
+  userCurrency=code;
+  if(currentUser){await sb.from('profiles').upsert({id:currentUser.id,currency:code});}
+  applyCurrencyLabels();
+  closeModal('modal-currency');
+  // Re-render everything that shows money
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();
 }
 async function editIncome(){
-  const val=prompt('Enter your monthly income ($):',monthlyIncome||'');
+  const val=prompt('Enter your monthly income ('+curSym()+'):',monthlyIncome||'');
   if(val===null)return;
   const inc=parseFloat(val)||0;
   await sb.from('profiles').upsert({id:currentUser.id,monthly_income:inc});
@@ -1296,10 +1344,11 @@ function updateAdvisorContext(){
   const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
   const byCat={};
   thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  const catStr=Object.entries(byCat).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join(', ');
-  const goalsStr=userGoals.map(g=>`${g.name}: $${g.current}/$${g.target} (${Math.round((parseFloat(g.current)/parseFloat(g.target))*100)}%)`).join(', ');
-  const budgetAlerts=Object.entries(byCat).filter(([cat,amt])=>userBudgets[cat]&&amt>userBudgets[cat]).map(([cat,amt])=>`${cat} OVER BUDGET by $${(amt-userBudgets[cat]).toFixed(2)}`).join(', ');
-  aiContext=`User: ${currentUser.name||'User'} | Net Worth: $${netWorth.toFixed(2)} | Monthly Income: $${income.toFixed(2)} | Spent This Month: $${spent.toFixed(2)} | Saved: $${(income-spent).toFixed(2)} | Savings Rate: ${income>0?Math.round(((income-spent)/income)*100):0}% | Spending: ${catStr||'None recorded'} | Goals: ${goalsStr||'None set'} | Budget Alerts: ${budgetAlerts||'None'} | Total Transactions: ${userTransactions.length}`;
+  const cs=curSym();
+  const catStr=Object.entries(byCat).map(([k,v])=>`${k}: ${cs}${v.toFixed(2)}`).join(', ');
+  const goalsStr=userGoals.map(g=>`${g.name}: ${cs}${g.current}/${cs}${g.target} (${Math.round((parseFloat(g.current)/parseFloat(g.target))*100)}%)`).join(', ');
+  const budgetAlerts=Object.entries(byCat).filter(([cat,amt])=>userBudgets[cat]&&amt>userBudgets[cat]).map(([cat,amt])=>`${cat} OVER BUDGET by ${cs}${(amt-userBudgets[cat]).toFixed(2)}`).join(', ');
+  aiContext=`User: ${currentUser.name||'User'} | Currency: ${userCurrency} | Net Worth: ${cs}${netWorth.toFixed(2)} | Monthly Income: ${cs}${income.toFixed(2)} | Spent This Month: ${cs}${spent.toFixed(2)} | Saved: ${cs}${(income-spent).toFixed(2)} | Savings Rate: ${income>0?Math.round(((income-spent)/income)*100):0}% | Spending: ${catStr||'None recorded'} | Goals: ${goalsStr||'None set'} | Budget Alerts: ${budgetAlerts||'None'} | Total Transactions: ${userTransactions.length}`;
 }
 const SYS=`You are Thrive AI, a warm brilliant personal finance coach. You speak like a trusted caring friend. You have the user's real financial data. Be specific with their numbers. Keep responses to 2-4 sentences unless more detail is asked for. Celebrate wins. Address problems kindly. Never mention Claude or Anthropic. Always end with: "This is educational information, not financial advice."`;
 function clearChat(){chatHistory=[];document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;}
@@ -1362,7 +1411,7 @@ window.addEventListener('load',async()=>{
   if(session){
     currentUser=session.user;
     const {data:profile}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;}
+    if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
     await loadUserData();
     show('s-app');switchTab('home');
   }
