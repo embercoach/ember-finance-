@@ -907,7 +907,7 @@ async function loadUserData(){
     aiQuestionsMonth=profile.ai_questions_month||null;
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   }
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();
 }
 
 // DASHBOARD
@@ -1683,7 +1683,25 @@ Rules for this block:
 - "type" must be one of: "monthly_income" (ongoing monthly income — only when the user describes it as their regular/monthly income, not a one-off), "transaction" (kind is "income" or "expense", needs name, amount, category), "goal" (needs name, target, and current — default current to 0 if not stated).
 - If there is nothing concrete and numeric to log, omit the block entirely — do not include an empty one.
 - The block is invisible to the user (the app strips it out and shows a confirmation card instead), so never reference it or mention "logging" or "the block" in your visible reply — just answer naturally.`;
-function clearChat(){chatHistory=[];document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;}
+async function clearChat(){
+  chatHistory=[];
+  document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;
+  if(currentUser)await sb.from('chat_messages').delete().eq('user_id',currentUser.id);
+}
+async function loadChatHistory(){
+  if(!currentUser)return;
+  const {data:msgs}=await sb.from('chat_messages').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true}).limit(50);
+  if(!msgs||!msgs.length)return; // keep the default welcome message
+  chatHistory=msgs.map(m=>({role:m.role,content:m.content}));
+  const box=document.getElementById('messages');
+  box.innerHTML=msgs.map(m=>{
+    if(m.role==='user'){
+      return `<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${m.content}</div></div></div>`;
+    }
+    return `<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${m.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
 function updateAdvisorStatus(){
   const el=document.getElementById('advisor-status-text');
   if(!el)return;
@@ -1719,6 +1737,7 @@ async function sendMessage(){
   const msgs=document.getElementById('messages');
   msgs.innerHTML+=`<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${text}</div></div></div>`;
   chatHistory.push({role:'user',content:text});
+  if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'user',content:text});
   const tid='t'+Date.now();
   msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
   msgs.scrollTop=msgs.scrollHeight;
@@ -1760,6 +1779,7 @@ async function sendMessage(){
     }
 
     chatHistory.push({role:'assistant',content:reply});
+    if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'assistant',content:reply});
     msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
     if(detectedActions.length)renderIntakeCard(detectedActions,msgs);
     await recordAiQuestionUsed(); // only counts against the limit on a successful reply
