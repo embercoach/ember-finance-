@@ -449,6 +449,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         </div>
       </div>
       <div id="celebrations" style="margin:8px 18px 0"></div>
+      <div id="bill-reminders" style="margin:8px 18px 0"></div>
       <div id="budget-alerts" style="margin:8px 18px 0"></div>
       <div class="page-pad">
         <div class="hero-card glass animate-in" style="margin-top:12px">
@@ -905,7 +906,7 @@ async function loadUserData(){
     aiQuestionsMonth=profile.ai_questions_month||null;
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   }
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();
 }
 
 // DASHBOARD
@@ -1099,6 +1100,26 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
   if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
   document.getElementById('home-insights').innerHTML=insights.slice(0,3).join('');
+}
+
+// BILL REMINDERS — in-app banner for recurring items due within the next 3 days
+function checkUpcomingBills(){
+  const el=document.getElementById('bill-reminders');
+  if(!el)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const banners=[];
+  userRecurring.filter(r=>r.active!==false).forEach(r=>{
+    const due=new Date(r.next_date+'T00:00:00');
+    const daysUntil=Math.round((due-today)/86400000);
+    if(daysUntil>=0 && daysUntil<=3){
+      const c=CURRENCIES[r.currency]||curCfg();
+      const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
+      const when=daysUntil===0?'today':daysUntil===1?'tomorrow':`in ${daysUntil} days`;
+      const kind=r.amount<0?'payment':'income';
+      banners.push(`<div class="alert-banner alert-warning" style="display:block;margin-bottom:4px">🔔 ${r.name} — ${kind} of ${amt} due ${when}</div>`);
+    }
+  });
+  el.innerHTML=banners.slice(0,3).join('');
 }
 
 function checkBudgetAlerts(){
