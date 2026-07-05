@@ -624,15 +624,15 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 
         <!-- Monthly income -->
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
-          <div class="profile-item" onclick="editIncome()">
+          <div class="profile-item" id="tut-target-income" onclick="editIncome()">
             <div><div class="profile-label">💰 Monthly Income</div><div class="profile-sub" id="income-display">Not set</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
-          <div class="profile-item" onclick="openModal('modal-currency')">
+          <div class="profile-item" id="tut-target-currency" onclick="openModal('modal-currency')">
             <div><div class="profile-label">💱 Currency</div><div class="profile-sub" id="currency-display">US Dollar (USD)</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
-          <div class="profile-item" onclick="showMonthlySummary()">
+          <div class="profile-item" id="tut-target-summary" onclick="showMonthlySummary()">
             <div><div class="profile-label">📊 Monthly Summary</div><div class="profile-sub">View this month's full report</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
@@ -1469,15 +1469,23 @@ function showMonthlySummary(){
 
 // TUTORIAL — a real guided tour. Switches tabs, spotlights the ACTUAL button, and waits for a real click.
 const TUT_STEPS=[
-  {type:'info',tab:'home',title:'Welcome to Thrive AI! 👋',body:"This is your Home — a quick snapshot of your money. Your Net Balance sits at the top, with Income, Spent, Saved and total Transactions just below it."},
-  {type:'info',tab:'home',title:'Charts & Insights 📊',body:"Scroll down and you'll find a spending chart (tap Daily / Weekly / Monthly to switch views) and personalised notices from Thrive AI based on your real numbers."},
+  {type:'info',tab:'home',title:'Welcome to Thrive AI! 👋',body:"Let's take a proper look around — this tour covers everything, including your Profile settings. This is Home, your money at a glance."},
+  {type:'info',tab:'home',title:'Your Net Balance 💰',body:"This number is the running total of every transaction you've ever logged — all income minus all expenses, added together. It's not necessarily your real bank balance (it only knows what you've told it), but it's a good pulse-check on where things stand overall."},
+  {type:'info',tab:'home',title:'Income, Spent, Saved, Transactions 📊',body:"These four cards cover THIS MONTH only. Tap any of them — they're not just for looking at, each one opens a full breakdown (e.g. tap Spent to see every expense by category)."},
+  {type:'info',tab:'home',title:'The Spending Chart 📈',body:"Switch between Daily / Weekly / Monthly views here. Tap <b>View Full Breakdown</b> below the chart for a detailed period-by-period history with every transaction listed."},
+  {type:'info',tab:'home',title:'Thrive AI Notices 💡',body:"This section automatically surfaces what matters most right now — over-budget warnings, milestone celebrations, or a nudge to add your first transaction. It updates itself as your data changes."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-addtx',expectedModalId:'modal-add-tx',title:'Add a Transaction 💳',body:"Tap the glowing button to log a real income or expense."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-recurring',expectedModalId:'modal-recurring',title:'Recurring Payments 🔁',body:"Tap the glowing button to set up a payment that repeats automatically — rent, salary, subscriptions."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-budget',expectedModalId:'modal-add-budget',title:'Set a Budget ⚙️',body:"Tap the glowing button to cap what you spend in a category."},
+  {type:'info',tab:'spend',title:'Categories & Search 🔍',body:"Below your budgets, every category you spend in shows up as its own card with a progress bar. Use the search bar to instantly find any past transaction by name or category."},
   {type:'target',tab:'goals',targetSelector:'#tut-target-goal',expectedModalId:'modal-add-goal',title:'Set a Goal 🎯',body:"Tap the glowing button to create your first savings goal."},
   {type:'info',tab:'advisor',title:'Or Just Tell It Your Numbers 💬',body:"Here's a shortcut: you can just <b>type your numbers straight into the chat</b> — like \"I earn R10,000 a month, spend R2,000 on food, and want to save R15,000 for an emergency fund.\" Thrive AI will read it, show you exactly what it wants to add, and let you fix anything before confirming. It even works for setting up recurring payments — just ask it to make something recurring."},
   {type:'target',tab:'advisor',targetSelector:'#tut-target-advisor',expectedModalId:null,title:'Ask Thrive AI ✨',body:"Tap any of the glowing quick questions to try your AI coach."},
-  {type:'info',tab:'profile',title:"You're all set! 🎉",body:"That's the whole app. Forgot something? Come back to <b>Profile → Replay Tutorial</b> any time — it never touches your data."}
+  {type:'target',tab:'profile',targetSelector:'#tut-target-income',expectedModalId:null,title:'Set Your Monthly Income 💰',body:"Tap the glowing row to set your income here directly. This is what powers your savings rate and forecasts app-wide."},
+  {type:'target',tab:'profile',targetSelector:'#tut-target-currency',expectedModalId:'modal-currency',title:'Choose Your Currency 💱',body:"Tap the glowing row to switch currencies — every amount across the whole app updates instantly."},
+  {type:'target',tab:'profile',targetSelector:'#tut-target-summary',expectedModalId:'modal-monthly-summary',title:'Monthly Summary 📊',body:"Tap the glowing row for a full report card of your month — income, spending, savings rate, and Thrive AI's take on how it went."},
+  {type:'info',tab:'profile',title:'The Rest of Profile ⚙️',body:"A few more things live here: <b>Export Transactions</b> downloads your full history as a CSV file, <b>Replay Tutorial</b> brings you right back to this tour any time, and <b>Send Feedback</b> goes straight to us — we read every message. Further down you'll also find Upgrade to Pro, Clear All Data, and Sign Out."},
+  {type:'info',tab:'profile',title:"You're all set! 🎉",body:"That's genuinely the whole app now. Forgot something? Come back to <b>Profile → Replay Tutorial</b> any time — it never touches your data."}
 ];
 let tutStep=0;
 let tutActionPending=null;
