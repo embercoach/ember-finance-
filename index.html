@@ -219,6 +219,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:12px">Set up payments that repeat automatically — rent, salary, subscriptions. They're added for you on their due date.</p>
     <div id="recurring-list" style="margin-bottom:12px"></div>
     <button class="btn-primary" onclick="closeModal('modal-recurring');openModal('modal-add-recurring')">+ Add Recurring</button>
+    <button class="btn-outline" id="recurring-clear-all-btn" style="display:none;margin-top:8px" onclick="clearAllRecurring()">🗑️ Clear All Recurring</button>
   </div>
 </div>
 
@@ -1275,7 +1276,13 @@ async function addRecurring(){
 function renderRecurring(){
   const box=document.getElementById('recurring-list');
   if(!box)return;
-  if(!userRecurring.length){box.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';return;}
+  const clearBtn=document.getElementById('recurring-clear-all-btn');
+  if(!userRecurring.length){
+    box.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';
+    if(clearBtn)clearBtn.style.display='none';
+    return;
+  }
+  if(clearBtn)clearBtn.style.display='block';
   box.innerHTML=userRecurring.map(r=>{
     const sign=r.amount<0?'−':'+';
     const c=CURRENCIES[r.currency]||curCfg();
@@ -1289,6 +1296,11 @@ function renderRecurring(){
 async function deleteRecurring(id){
   if(!confirm('Stop this recurring item? Transactions already created will stay.'))return;
   await sb.from('recurring').delete().eq('id',id);
+  await loadUserData();openModal('modal-recurring');
+}
+async function clearAllRecurring(){
+  if(!confirm(`Remove all ${userRecurring.length} recurring items? Transactions already created will stay — this only stops future ones.`))return;
+  await sb.from('recurring').delete().eq('user_id',currentUser.id);
   await loadUserData();openModal('modal-recurring');
 }
 function openEditTx(id){
@@ -1770,15 +1782,20 @@ function renderIntakeCard(actions,msgs){
   const cardId='intake-'+Date.now();
   intakeStore[cardId]=actions;
   const rows=actions.map((a,i)=>{
-    let label='';
-    if(a.type==='monthly_income')label=`💰 Set monthly income to ${fmt(a.amount)}`;
-    else if(a.type==='transaction')label=`${getCatIcon(a.category)} Add ${a.kind==='income'?'income':'expense'}: ${a.name} — ${fmt(a.amount)}`;
-    else if(a.type==='goal')label=`🎯 Create goal: ${a.name} (target ${fmt(a.target)})`;
+    let label='',amount='';
+    if(a.type==='monthly_income'){label='💰 Monthly income';amount=a.amount;}
+    else if(a.type==='transaction'){label=`${getCatIcon(a.category)} ${a.kind==='income'?'Income':'Expense'}: ${a.name}`;amount=a.amount;}
+    else if(a.type==='goal'){label=`🎯 Goal: ${a.name} (target)`;amount=a.target;}
     else return '';
-    return `<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#fff;padding:5px 0"><input type="checkbox" class="intake-check" data-idx="${i}" checked style="width:15px;height:15px;flex-shrink:0">${label}</label>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+      <input type="checkbox" class="intake-check" data-idx="${i}" checked style="width:15px;height:15px;flex-shrink:0">
+      <span style="flex:1;font-size:12px;color:#fff">${label}</span>
+      <span style="font-size:12px;color:rgba(255,255,255,0.6)">${curSym()}</span>
+      <input type="number" class="intake-amount" data-idx="${i}" value="${amount}" style="width:80px;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;font-size:12px;text-align:right">
+    </div>`;
   }).join('');
   const html=`<div class="msg-sage" id="${cardId}"><div class="msg-avatar">🌿</div><div class="glass" style="padding:13px 15px;max-width:82%;border-radius:4px 16px 16px 16px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px">I noticed some numbers — want me to add these?</div>
+    <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px">I noticed some numbers — check the amounts, fix anything wrong, then confirm</div>
     ${rows}
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn-small btn-blue" style="flex:1" onclick="confirmIntake('${cardId}')">Add Selected ✓</button>
@@ -1793,8 +1810,18 @@ async function confirmIntake(cardId){
   const card=document.getElementById(cardId);
   if(!card)return;
   const checks=card.querySelectorAll('.intake-check');
+  const amountInputs=card.querySelectorAll('.intake-amount');
+  const amountByIdx={};
+  amountInputs.forEach(inp=>{amountByIdx[inp.dataset.idx]=parseFloat(inp.value)||0;});
   const selected=[];
-  checks.forEach(c=>{if(c.checked)selected.push(actions[parseInt(c.dataset.idx)]);});
+  checks.forEach(c=>{
+    if(!c.checked)return;
+    const idx=c.dataset.idx;
+    const a={...actions[parseInt(idx)]};
+    const editedAmount=amountByIdx[idx];
+    if(a.type==='goal')a.target=editedAmount;else a.amount=editedAmount;
+    selected.push(a);
+  });
   for(const a of selected){
     try{
       if(a.type==='monthly_income'){
