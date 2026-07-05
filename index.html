@@ -784,6 +784,12 @@ const CURRENCIES={
 let userCurrency='USD';
 function curCfg(){return CURRENCIES[userCurrency]||CURRENCIES.USD;}
 function curSym(){return curCfg().symbol;}
+function normCat(c){return (c||'Other').trim().toLowerCase();}
+function getBudgetFor(cat){
+  const target=normCat(cat);
+  const key=Object.keys(userBudgets).find(k=>normCat(k)===target);
+  return key?userBudgets[key]:undefined;
+}
 const CAT_ICONS={Food:'🍽️',Housing:'🏠',Transport:'🚗',Entertainment:'🎬',Health:'💊',Subscriptions:'📱',Income:'💰',Salary:'💰',Other:'💳',Shopping:'🛍️',Clothing:'👕',Education:'📚',Gym:'💪',Kids:'👶',Travel:'✈️',Utilities:'⚡',Insurance:'🛡️'};
 function getCatIcon(cat){return CAT_ICONS[cat]||'💳'}
 function fmt(n){const c=curCfg();return c.symbol+Math.abs(parseFloat(n)||0).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -920,8 +926,10 @@ function updateDashboard(){
   const saved=totalIncome-spent;
   const savingsRate=totalIncome>0?Math.round((saved/totalIncome)*100):0;
   const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
+  const badgeIcon=savingsRate<0?'↓':'↑';
+  const badgeTone=savingsRate>20?'Great job! 🎉':savingsRate>=0?'Keep going! 💪':"You're spending more than you earn — let's fix this 💛";
   document.getElementById('net-worth-display').textContent=fmt(netWorth);
-  document.getElementById('savings-badge').textContent=totalIncome>0?`↑ ${savingsRate}% savings rate · ${savingsRate>20?'Great job! 🎉':'Keep going! 💪'}`:'Add transactions to track progress';
+  document.getElementById('savings-badge').textContent=totalIncome>0?`${badgeIcon} ${savingsRate}% savings rate · ${badgeTone}`:'Add transactions to track progress';
   document.getElementById('stat-income').textContent=fmt(totalIncome);
   document.getElementById('stat-spent').textContent=fmt(spent);
   document.getElementById('stat-saved').textContent=fmt(saved);
@@ -1096,7 +1104,7 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   const byCat={};
   const now=new Date();
   userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${cat} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${cat} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${cat} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${cat} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${cat} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${cat} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${cat} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${cat} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
   if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
   if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
@@ -1128,7 +1136,7 @@ function checkBudgetAlerts(){
   const alerts=[];
   const byCat={};
   userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  Object.entries(byCat).forEach(([cat,amt])=>{const budget=userBudgets[cat];if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
 }
 
@@ -1181,7 +1189,10 @@ function checkCelebrations(){
   if(Object.keys(userBudgets).length>0 && thisMonth.length>0){
     const byCat={};
     thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-    const allUnder=Object.keys(userBudgets).every(cat=>(byCat[cat]||0)<=userBudgets[cat]);
+    const allUnder=Object.keys(userBudgets).every(cat=>{
+      const spentInCat=Object.entries(byCat).find(([c])=>normCat(c)===normCat(cat));
+      return (spentInCat?spentInCat[1]:0)<=userBudgets[cat];
+    });
     if(allUnder){
       const id=`underbudget_${now.getFullYear()}_${now.getMonth()}`;
       if(!dismissed.includes(id)){
@@ -1208,7 +1219,7 @@ function updateSpending(){
   document.getElementById('spend-subtitle').textContent=total>0?`This month's spending`:'No spending recorded this month';
   const byCat={};
   thisMonth.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=userBudgets[cat]||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
+  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=getBudgetFor(cat)||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
   document.getElementById('categories-list').innerHTML=catHTML;
   renderAllTransactions();
 }
@@ -1662,7 +1673,7 @@ function updateAdvisorContext(){
   const cs=curSym();
   const catStr=Object.entries(byCat).map(([k,v])=>`${k}: ${cs}${v.toFixed(2)}`).join(', ');
   const goalsStr=userGoals.map(g=>`${g.name}: ${cs}${g.current}/${cs}${g.target} (${Math.round((parseFloat(g.current)/parseFloat(g.target))*100)}%)`).join(', ');
-  const budgetAlerts=Object.entries(byCat).filter(([cat,amt])=>userBudgets[cat]&&amt>userBudgets[cat]).map(([cat,amt])=>`${cat} OVER BUDGET by ${cs}${(amt-userBudgets[cat]).toFixed(2)}`).join(', ');
+  const budgetAlerts=Object.entries(byCat).filter(([cat,amt])=>getBudgetFor(cat)&&amt>getBudgetFor(cat)).map(([cat,amt])=>`${cat} OVER BUDGET by ${cs}${(amt-getBudgetFor(cat)).toFixed(2)}`).join(', ');
   const recurringStr=userRecurring.map(r=>`${r.name}: ${cs}${Math.abs(parseFloat(r.amount)).toFixed(2)} ${r.amount<0?'expense':'income'}, ${r.frequency}`).join(', ');
   const recentTxStr=userTransactions.slice(0,15).map(t=>`${t.name}: ${cs}${Math.abs(parseFloat(t.amount)).toFixed(2)} ${t.amount<0?'expense':'income'}${t.recurring_id?' (already recurring)':''}`).join(', ');
   aiContext=`User: ${currentUser.name||'User'} | Currency: ${userCurrency} | Net Balance: ${cs}${netWorth.toFixed(2)} | Monthly Income: ${cs}${income.toFixed(2)} | Spent This Month: ${cs}${spent.toFixed(2)} | Saved: ${cs}${(income-spent).toFixed(2)} | Savings Rate: ${income>0?Math.round(((income-spent)/income)*100):0}% | Spending: ${catStr||'None recorded'} | Goals: ${goalsStr||'None set'} | Budget Alerts: ${budgetAlerts||'None'} | Total Transactions: ${userTransactions.length} | Existing Recurring Items: ${recurringStr||'None set up yet'} | Recent Named Transactions: ${recentTxStr||'None yet'}`;
@@ -1838,11 +1849,15 @@ async function confirmIntake(cardId){
   const amountByIdx={};
   amountInputs.forEach(inp=>{amountByIdx[inp.dataset.idx]=parseFloat(inp.value)||0;});
   const selected=[];
+  let skipped=0;
   checks.forEach(c=>{
     if(!c.checked)return;
     const idx=c.dataset.idx;
     const a={...actions[parseInt(idx)]};
     const editedAmount=amountByIdx[idx];
+    // Same safety rule as the manual Add Transaction/Goal/Recurring forms: block zero/invalid amounts.
+    // monthly_income is the one exception — explicitly setting it to 0 is a valid, intentional action.
+    if(a.type!=='monthly_income' && (!editedAmount || editedAmount<=0)){skipped++;return;}
     if(a.type==='goal')a.target=editedAmount;else a.amount=editedAmount;
     selected.push(a);
   });
@@ -1862,7 +1877,8 @@ async function confirmIntake(cardId){
     }catch(e){console.error('Intake insert failed',e);}
   }
   delete intakeStore[cardId];
-  card.innerHTML=`<div class="msg-avatar">🌿</div><div class="glass" style="padding:12px 15px;max-width:82%;border-radius:4px 16px 16px 16px"><div style="font-size:12px;color:#7fff7f;font-weight:700">✓ Added to your account</div></div>`;
+  const skipNote=skipped>0?` (skipped ${skipped} item${skipped>1?'s':''} with no amount entered)`:'';
+  card.innerHTML=`<div class="msg-avatar">🌿</div><div class="glass" style="padding:12px 15px;max-width:82%;border-radius:4px 16px 16px 16px"><div style="font-size:12px;color:#7fff7f;font-weight:700">✓ Added to your account${skipNote}</div></div>`;
   await loadUserData();
 }
 function dismissIntake(cardId){
