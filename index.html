@@ -304,6 +304,19 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-tutorial">
+  <div class="modal glass-strong" style="max-height:82vh;overflow-y:auto">
+    <div class="modal-title">🎓 Quick Tour <button class="modal-close" onclick="closeTutorial()">×</button></div>
+    <div class="onboard-progress" id="tut-dots" style="margin-bottom:16px"></div>
+    <div id="tut-content" style="min-height:180px"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn-outline" id="tut-back-btn" style="flex:1;margin:0" onclick="tutorialBack()">← Back</button>
+      <button class="btn-primary" id="tut-next-btn" style="flex:2;margin:0" onclick="tutorialNext()">Next →</button>
+    </div>
+    <div style="text-align:center;margin-top:10px"><span class="form-link" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none" onclick="closeTutorial()">Skip tour</span></div>
+  </div>
+</div>
+
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="landing">
@@ -609,6 +622,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div><div class="profile-label">📥 Export Transactions</div><div class="profile-sub">Download as CSV file</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
+          <div class="profile-item" onclick="startTutorial()">
+            <div><div class="profile-label">🎓 Replay Tutorial</div><div class="profile-sub">See the quick tour again</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
         </div>
 
         <!-- Account actions -->
@@ -781,6 +798,7 @@ async function doLogin(){
     if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
     await loadUserData();
     show('s-app');switchTab('home');
+    maybeStartTutorial();
   }
   btn.textContent='Sign In 🌿';btn.disabled=false;
 }
@@ -821,6 +839,7 @@ async function finishOnboard(){
   if(obGoalName&&obGoalTarget>0){await sb.from('goals').insert({user_id:currentUser.id,name:obGoalName,target:obGoalTarget,current:0});}
   await loadUserData();
   show('s-app');switchTab('home');
+  maybeStartTutorial();
 }
 
 // LOAD DATA
@@ -1356,6 +1375,50 @@ function showMonthlySummary(){
   openModal('modal-monthly-summary');
 }
 
+// TUTORIAL — a guided, replayable walkthrough. Never touches user data.
+const TUT_STEPS=[
+  {tab:'home',title:'Welcome to Thrive AI! 👋',body:"This is your Home — a quick snapshot of your money. Your Net Balance sits at the top, with Income, Spent, Saved and total Transactions just below it."},
+  {tab:'home',title:'Charts & Insights 📊',body:"Scroll down and you'll find a spending chart (tap Daily / Weekly / Monthly to switch views) and personalised notices from Thrive AI based on your real numbers."},
+  {tab:'spend',title:'Add a Transaction 💳',body:"Head to the Spending tab to log income or expenses. Tap <b>+ Add Transaction</b>, fill in the name, amount and category, and it instantly updates your dashboard."},
+  {tab:'spend',title:'Recurring Payments 🔁',body:"Got a rent, salary or subscription that repeats every month? Set it up once under <b>🔁 Recurring Payments</b> and Thrive AI will add it automatically — no need to log it manually again."},
+  {tab:'spend',title:'Budgets & Categories ⚙️',body:"Tap <b>⚙ Set Budget</b> to cap what you spend per category. You'll see a progress bar and get warned here on Home if you go over."},
+  {tab:'goals',title:'Set a Goal 🎯',body:"Head to Goals to create savings targets — an emergency fund, a car, a trip. Add money to a goal anytime with <b>+ Add Savings</b> and watch your progress bar fill up."},
+  {tab:'advisor',title:'Ask Thrive AI ✨',body:"This is your AI coach. Ask things like \"Where am I losing money?\" or \"Can I afford a vacation?\" — it answers using your real numbers. It's educational only, not licensed financial advice."},
+  {tab:'profile',title:"You're all set! 🎉",body:"That's the whole app. Forgot something? Come back to <b>Profile → Replay Tutorial</b> any time — it never touches your data."}
+];
+let tutStep=0;
+function tutorialSeenKey(){return 'thrive_tutorial_seen_'+(currentUser?currentUser.id:'anon');}
+function maybeStartTutorial(){
+  try{if(localStorage.getItem(tutorialSeenKey()))return;}catch(e){}
+  startTutorial();
+}
+function startTutorial(){
+  tutStep=0;
+  renderTutorialStep();
+  openModal('modal-tutorial');
+}
+function renderTutorialStep(){
+  const step=TUT_STEPS[tutStep];
+  switchTab(step.tab);
+  document.getElementById('tut-content').innerHTML=`<div style="text-align:center;margin-bottom:6px"><div style="font-family:'Lora',serif;font-size:19px;color:#fff;margin-bottom:10px">${step.title}</div><div style="font-size:13px;color:rgba(255,255,255,0.78);line-height:1.7">${step.body}</div></div>`;
+  document.getElementById('tut-dots').innerHTML=TUT_STEPS.map((s,i)=>`<div class="onboard-dot ${i===tutStep?'active':''}"></div>`).join('');
+  document.getElementById('tut-back-btn').style.visibility=tutStep===0?'hidden':'visible';
+  document.getElementById('tut-next-btn').textContent=tutStep===TUT_STEPS.length-1?'Got it 🎉':'Next →';
+}
+function tutorialNext(){
+  if(tutStep>=TUT_STEPS.length-1){closeTutorial();return;}
+  tutStep++;renderTutorialStep();
+}
+function tutorialBack(){
+  if(tutStep<=0)return;
+  tutStep--;renderTutorialStep();
+}
+function closeTutorial(){
+  closeModal('modal-tutorial');
+  try{localStorage.setItem(tutorialSeenKey(),'1');}catch(e){}
+  switchTab('home');
+}
+
 // TAB NAVIGATION
 function switchTab(tab){
   const tabs=['home','spend','goals','advisor','profile','plans','statdetail'];
@@ -1528,6 +1591,7 @@ window.addEventListener('load',async()=>{
     if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
     await loadUserData();
     show('s-app');switchTab('home');
+    maybeStartTutorial();
   }
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});});
