@@ -311,9 +311,12 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <div id="tut-content" style="min-height:180px"></div>
     <div style="display:flex;gap:8px;margin-top:6px">
       <button class="btn-outline" id="tut-back-btn" style="flex:1;margin:0" onclick="tutorialBack()">← Back</button>
-      <button class="btn-primary" id="tut-next-btn" style="flex:2;margin:0" onclick="tutorialNext()">Next →</button>
+      <button class="btn-primary" id="tut-next-btn" style="flex:2;margin:0">Next →</button>
     </div>
-    <div style="text-align:center;margin-top:10px"><span class="form-link" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none" onclick="closeTutorial()">Skip tour</span></div>
+    <div style="text-align:center;margin-top:10px;display:flex;justify-content:center;gap:16px">
+      <span class="form-link" id="tut-skip-step" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none;display:none" onclick="tutorialSkipStep()">Skip this step →</span>
+      <span class="form-link" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none" onclick="closeTutorial()">Skip tour</span>
+    </div>
   </div>
 </div>
 
@@ -761,7 +764,18 @@ function show(id){
   document.getElementById('app-bg').style.display=isApp?'block':'none';
 }
 function openModal(id){document.getElementById(id).classList.add('active');const inp=document.querySelector(`#${id} input[type="date"]`);if(inp&&!inp.value)inp.value=new Date().toISOString().split('T')[0];}
-function closeModal(id){document.getElementById(id).classList.remove('active')}
+function closeModal(id){
+  document.getElementById(id).classList.remove('active');
+  if(tutActionPending && id===tutActionPending){
+    tutActionPending=null;
+    tutStep++;
+    if(tutStep<TUT_STEPS.length){
+      setTimeout(()=>{renderTutorialStep();openModal('modal-tutorial');},350);
+    } else {
+      setTimeout(()=>{closeTutorial();},350);
+    }
+  }
+}
 function setGreeting(name){const h=new Date().getHours();const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';const displayName=name||currentUser?.email?.split('@')[0]||'';document.getElementById('greeting').textContent=`${g}${displayName?', '+displayName:''}! 👋`}
 
 // AUTH
@@ -1201,7 +1215,7 @@ async function addRecurring(){
   const {error}=await sb.from('recurring').insert({user_id:currentUser.id,name,amount:finalAmount,category,currency:userCurrency,frequency,next_date:startDate,active:true});
   if(error){alert('Error: '+error.message);return;}
   document.getElementById('rec-name').value='';document.getElementById('rec-amount').value='';document.getElementById('rec-category').value='';
-  closeModal('modal-add-recurring');await loadUserData();openModal('modal-recurring');
+  closeModal('modal-add-recurring');await loadUserData();
 }
 function renderRecurring(){
   const box=document.getElementById('recurring-list');
@@ -1375,25 +1389,26 @@ function showMonthlySummary(){
   openModal('modal-monthly-summary');
 }
 
-// TUTORIAL — a guided, replayable walkthrough. Never touches user data.
+// TUTORIAL — a guided, replayable, INTERACTIVE walkthrough. Never touches user data unless the user chooses to act.
 const TUT_STEPS=[
   {tab:'home',title:'Welcome to Thrive AI! 👋',body:"This is your Home — a quick snapshot of your money. Your Net Balance sits at the top, with Income, Spent, Saved and total Transactions just below it."},
   {tab:'home',title:'Charts & Insights 📊',body:"Scroll down and you'll find a spending chart (tap Daily / Weekly / Monthly to switch views) and personalised notices from Thrive AI based on your real numbers."},
-  {tab:'spend',title:'Add a Transaction 💳',body:"Head to the Spending tab to log income or expenses. Tap <b>+ Add Transaction</b>, fill in the name, amount and category, and it instantly updates your dashboard."},
-  {tab:'spend',title:'Recurring Payments 🔁',body:"Got a rent, salary or subscription that repeats every month? Set it up once under <b>🔁 Recurring Payments</b> and Thrive AI will add it automatically — no need to log it manually again."},
-  {tab:'spend',title:'Budgets & Categories ⚙️',body:"Tap <b>⚙ Set Budget</b> to cap what you spend per category. You'll see a progress bar and get warned here on Home if you go over."},
-  {tab:'goals',title:'Set a Goal 🎯',body:"Head to Goals to create savings targets — an emergency fund, a car, a trip. Add money to a goal anytime with <b>+ Add Savings</b> and watch your progress bar fill up."},
-  {tab:'advisor',title:'Ask Thrive AI ✨',body:"This is your AI coach. Ask things like \"Where am I losing money?\" or \"Can I afford a vacation?\" — it answers using your real numbers. It's educational only, not licensed financial advice."},
+  {tab:'spend',title:'Add a Transaction 💳',body:"Let's log a real one together. Tap <b>Try it</b> and I'll open the form — fill in a name, amount and category, or just close it if you'd rather do this later.",actionModal:'modal-add-tx',actionLabel:'Try it →'},
+  {tab:'spend',title:'Recurring Payments 🔁',body:"Got a rent, salary or subscription that repeats every month? Tap <b>Try it</b> and I'll open the form — Thrive AI will add it automatically from then on.",actionModal:'modal-add-recurring',actionLabel:'Try it →'},
+  {tab:'spend',title:'Budgets & Categories ⚙️',body:"Tap <b>Try it</b> to set a monthly cap for a category — you'll see a progress bar and get warned on Home if you go over.",actionModal:'modal-add-budget',actionLabel:'Try it →'},
+  {tab:'goals',title:'Set a Goal 🎯',body:"Tap <b>Try it</b> to create your first savings goal — an emergency fund, a car, a trip. You can add money to it anytime after.",actionModal:'modal-add-goal',actionLabel:'Try it →'},
+  {tab:'advisor',title:'Ask Thrive AI ✨',body:"This is your AI coach. Try asking something like \"Where am I losing money?\" — it answers using your real numbers. It's educational only, not licensed financial advice."},
   {tab:'profile',title:"You're all set! 🎉",body:"That's the whole app. Forgot something? Come back to <b>Profile → Replay Tutorial</b> any time — it never touches your data."}
 ];
 let tutStep=0;
+let tutActionPending=null;
 function tutorialSeenKey(){return 'thrive_tutorial_seen_'+(currentUser?currentUser.id:'anon');}
 function maybeStartTutorial(){
   try{if(localStorage.getItem(tutorialSeenKey()))return;}catch(e){}
   startTutorial();
 }
 function startTutorial(){
-  tutStep=0;
+  tutStep=0;tutActionPending=null;
   renderTutorialStep();
   openModal('modal-tutorial');
 }
@@ -1403,17 +1418,38 @@ function renderTutorialStep(){
   document.getElementById('tut-content').innerHTML=`<div style="text-align:center;margin-bottom:6px"><div style="font-family:'Lora',serif;font-size:19px;color:#fff;margin-bottom:10px">${step.title}</div><div style="font-size:13px;color:rgba(255,255,255,0.78);line-height:1.7">${step.body}</div></div>`;
   document.getElementById('tut-dots').innerHTML=TUT_STEPS.map((s,i)=>`<div class="onboard-dot ${i===tutStep?'active':''}"></div>`).join('');
   document.getElementById('tut-back-btn').style.visibility=tutStep===0?'hidden':'visible';
-  document.getElementById('tut-next-btn').textContent=tutStep===TUT_STEPS.length-1?'Got it 🎉':'Next →';
+  const nextBtn=document.getElementById('tut-next-btn');
+  const skipStep=document.getElementById('tut-skip-step');
+  if(step.actionModal){
+    nextBtn.textContent=step.actionLabel||'Try it →';
+    nextBtn.onclick=tutorialDoAction;
+    skipStep.style.display='inline';
+  } else {
+    nextBtn.textContent=tutStep===TUT_STEPS.length-1?'Got it 🎉':'Next →';
+    nextBtn.onclick=tutorialNext;
+    skipStep.style.display='none';
+  }
+}
+function tutorialDoAction(){
+  const step=TUT_STEPS[tutStep];
+  tutActionPending=step.actionModal;
+  closeModal('modal-tutorial');
+  openModal(step.actionModal);
+}
+function tutorialSkipStep(){
+  tutorialNext();
 }
 function tutorialNext(){
   if(tutStep>=TUT_STEPS.length-1){closeTutorial();return;}
   tutStep++;renderTutorialStep();
+  if(!document.getElementById('modal-tutorial').classList.contains('active'))openModal('modal-tutorial');
 }
 function tutorialBack(){
   if(tutStep<=0)return;
   tutStep--;renderTutorialStep();
 }
 function closeTutorial(){
+  tutActionPending=null;
   closeModal('modal-tutorial');
   try{localStorage.setItem(tutorialSeenKey(),'1');}catch(e){}
   switchTab('home');
