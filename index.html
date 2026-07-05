@@ -323,6 +323,16 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal glass-strong">
+    <div class="modal-title">💬 Send Feedback <button class="modal-close" onclick="closeModal('modal-feedback')">×</button></div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:14px">Tell us what you love, what's frustrating, or what you wish Thrive AI could do. We read every message.</p>
+    <div class="success-msg" id="feedback-success">Thank you! Your feedback has been sent. 🌿</div>
+    <textarea class="form-input" id="feedback-message" rows="5" placeholder="Type your feedback here..." style="resize:none;min-height:110px"></textarea>
+    <button class="btn-primary" onclick="submitFeedback()">Send Feedback ✓</button>
+  </div>
+</div>
+
 <!-- LANDING -->
 <div class="screen active" id="s-landing">
   <div class="landing">
@@ -630,6 +640,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           </div>
           <div class="profile-item" onclick="startTutorial()">
             <div><div class="profile-label">🎓 Replay Tutorial</div><div class="profile-sub">See the quick tour again</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" onclick="openFeedback()">
+            <div><div class="profile-label">💬 Send Feedback</div><div class="profile-sub">Tell us what you'd love to see</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
         </div>
@@ -1501,6 +1515,22 @@ function closeTutorial(){
   closeModal('modal-tutorial');
   try{localStorage.setItem(tutorialSeenKey(),'1');}catch(e){}
   switchTab('home');
+}
+
+// FEEDBACK
+function openFeedback(){
+  document.getElementById('feedback-message').value='';
+  document.getElementById('feedback-success').style.display='none';
+  openModal('modal-feedback');
+}
+async function submitFeedback(){
+  const message=document.getElementById('feedback-message').value.trim();
+  if(!message){alert('Please write something before sending.');return;}
+  const {error}=await sb.from('feedback').insert({user_id:currentUser.id,email:currentUser.email,message});
+  if(error){alert('Error sending feedback: '+error.message);return;}
+  document.getElementById('feedback-message').value='';
+  document.getElementById('feedback-success').style.display='block';
+  setTimeout(()=>{closeModal('modal-feedback');},1600);
 }
 
 // TAB NAVIGATION
