@@ -210,6 +210,34 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-recurring">
+  <div class="modal glass-strong">
+    <div class="modal-title">🔁 Recurring <button class="modal-close" onclick="closeModal('modal-recurring')">×</button></div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:12px">Set up payments that repeat automatically — rent, salary, subscriptions. They're added for you on their due date.</p>
+    <div id="recurring-list" style="margin-bottom:12px"></div>
+    <button class="btn-primary" onclick="closeModal('modal-recurring');openModal('modal-add-recurring')">+ Add Recurring</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-recurring">
+  <div class="modal glass-strong">
+    <div class="modal-title">Add Recurring <button class="modal-close" onclick="closeModal('modal-add-recurring')">×</button></div>
+    <label class="form-label">Name</label>
+    <input class="form-input" id="rec-name" placeholder="e.g. Rent, Salary, Netflix">
+    <label class="form-label">Amount (<span class="cur-sym">$</span>)</label>
+    <input class="form-input" id="rec-amount" type="number" placeholder="0.00" step="0.01">
+    <label class="form-label">Type</label>
+    <select class="form-select" id="rec-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+    <label class="form-label">Category</label>
+    <input class="form-input" id="rec-category" placeholder="e.g. Housing, Income, Subscriptions...">
+    <label class="form-label">Repeats</label>
+    <select class="form-select" id="rec-frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option></select>
+    <label class="form-label">Starts on</label>
+    <input class="form-input" id="rec-date" type="date">
+    <button class="btn-primary" onclick="addRecurring()">Save Recurring ✓</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-add-goal">
   <div class="modal glass-strong">
     <div class="modal-title">Add Goal <button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
@@ -463,6 +491,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-tx')">+ Add Transaction</button>
           <button class="btn-outline" style="flex:1;padding:10px;font-size:12px;margin:0" onclick="openModal('modal-add-budget')">⚙ Set Budget</button>
         </div>
+        <div style="margin-bottom:12px">
+          <button class="btn-outline" style="width:100%;padding:10px;font-size:12px;margin:0" onclick="renderRecurring();openModal('modal-recurring')">🔁 Recurring Payments</button>
+        </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="section-label" style="margin:0">By Category</div>
@@ -685,6 +716,7 @@ const SUPA_KEY='sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
 const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
+let userRecurring=[];
 let chatHistory=[];
 // CURRENCY — single source of truth. USD is the default; the app is no longer hardcoded to it.
 const CURRENCIES={
@@ -795,15 +827,18 @@ async function finishOnboard(){
 async function loadUserData(){
   if(!currentUser)return;
   setGreeting(currentUser.name);
+  await processRecurring();
   const {data:txns}=await sb.from('transactions').select('*').eq('user_id',currentUser.id).order('date',{ascending:false}).order('created_at',{ascending:false});
   userTransactions=txns||[];
   const {data:goals}=await sb.from('goals').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   userGoals=goals||[];
   const {data:budgets}=await sb.from('budgets').select('*').eq('user_id',currentUser.id);
   userBudgets={};(budgets||[]).forEach(b=>userBudgets[b.category]=b.amount);
+  const {data:rec}=await sb.from('recurring').select('*').eq('user_id',currentUser.id).order('next_date',{ascending:true});
+  userRecurring=rec||[];
   const {data:profile}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
   if(profile){currentUser.name=profile.name;monthlyIncome=parseFloat(profile.monthly_income)||0;userCurrency=profile.currency||'USD';}
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();
 }
 
 // DASHBOARD
@@ -1090,7 +1125,7 @@ function updateSpending(){
 }
 function renderAllTransactions(){
   const txns=filteredTxns||userTransactions;
-  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
+  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}${t.recurring_id?' <span title="Recurring" style="font-size:10px">🔁</span>':''}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
   document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
 }
 
@@ -1107,6 +1142,66 @@ async function addTransaction(){
   if(error){alert('Error: '+error.message);return;}
   document.getElementById('tx-name').value='';document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='';
   closeModal('modal-add-tx');await loadUserData();
+}
+
+// RECURRING TRANSACTIONS
+function advanceDate(dateStr,frequency){
+  const d=new Date(dateStr+'T00:00:00');
+  if(frequency==='weekly'){d.setDate(d.getDate()+7);}
+  else{d.setMonth(d.getMonth()+1);}
+  return d.toISOString().split('T')[0];
+}
+async function processRecurring(){
+  if(!currentUser)return;
+  const {data:rules}=await sb.from('recurring').select('*').eq('user_id',currentUser.id).eq('active',true);
+  if(!rules||!rules.length)return;
+  const today=new Date().toISOString().split('T')[0];
+  for(const r of rules){
+    let next=r.next_date;
+    let guard=0;
+    // Create an occurrence for every due date up to today (catches missed months), capped for safety
+    while(next<=today && guard<60){
+      await sb.from('transactions').insert({user_id:currentUser.id,name:r.name,amount:r.amount,category:r.category,date:next,currency:r.currency||userCurrency,recurring_id:r.id});
+      next=advanceDate(next,r.frequency);
+      guard++;
+    }
+    if(next!==r.next_date){
+      await sb.from('recurring').update({next_date:next}).eq('id',r.id);
+    }
+  }
+}
+async function addRecurring(){
+  const name=document.getElementById('rec-name').value.trim();
+  const amount=parseFloat(document.getElementById('rec-amount').value);
+  const type=document.getElementById('rec-type').value;
+  const category=document.getElementById('rec-category').value.trim()||'Other';
+  const frequency=document.getElementById('rec-frequency').value;
+  const startDate=document.getElementById('rec-date').value||new Date().toISOString().split('T')[0];
+  if(!name||!amount){alert('Please fill in name and amount.');return;}
+  const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
+  const {error}=await sb.from('recurring').insert({user_id:currentUser.id,name,amount:finalAmount,category,currency:userCurrency,frequency,next_date:startDate,active:true});
+  if(error){alert('Error: '+error.message);return;}
+  document.getElementById('rec-name').value='';document.getElementById('rec-amount').value='';document.getElementById('rec-category').value='';
+  closeModal('modal-add-recurring');await loadUserData();openModal('modal-recurring');
+}
+function renderRecurring(){
+  const box=document.getElementById('recurring-list');
+  if(!box)return;
+  if(!userRecurring.length){box.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';return;}
+  box.innerHTML=userRecurring.map(r=>{
+    const sign=r.amount<0?'−':'+';
+    const c=CURRENCIES[r.currency]||curCfg();
+    const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
+      <div><div style="font-size:13px;font-weight:600;color:#fff">${getCatIcon(r.category)} ${r.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
+      <button onclick="deleteRecurring('${r.id}')" style="background:rgba(255,100,80,0.18);border:none;color:#ff8877;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
+    </div>`;
+  }).join('');
+}
+async function deleteRecurring(id){
+  if(!confirm('Stop this recurring item? Transactions already created will stay.'))return;
+  await sb.from('recurring').delete().eq('id',id);
+  await loadUserData();openModal('modal-recurring');
 }
 function openEditTx(id){
   const t=userTransactions.find(x=>x.id===id);
