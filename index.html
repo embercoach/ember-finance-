@@ -289,6 +289,8 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <input class="form-input" id="edit-tx-amount" type="number" step="0.01">
     <label class="form-label">Category</label>
     <input class="form-input" id="edit-tx-category" placeholder="Category">
+    <label class="form-label">Date</label>
+    <input class="form-input" id="edit-tx-date" type="date">
     <button class="btn-primary" onclick="saveEditTransaction()">Save Changes ✓</button>
   </div>
 </div>
@@ -784,6 +786,20 @@ const CURRENCIES={
 let userCurrency='USD';
 function curCfg(){return CURRENCIES[userCurrency]||CURRENCIES.USD;}
 function curSym(){return curCfg().symbol;}
+// Escapes user-typed text before inserting it into the page. Without this, a transaction
+// or chat message containing "<" or ">" (even accidentally, like "T-shirt <size L>") gets
+// interpreted as an HTML tag and silently breaks the display instead of showing as typed.
+function esc(str){
+  return String(str==null?'':str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Parses a transaction/goal's date correctly regardless of the user's timezone.
+// t.date is a plain "YYYY-MM-DD" string (no timezone) — parsing it directly with `new Date()`
+// treats it as UTC midnight, which silently shows the WRONG day for anyone west of UTC
+// (e.g. the US/Canada). Appending T00:00:00 forces it to be read as local midnight instead.
+function txDate(t){
+  if(t.date)return new Date(t.date+'T00:00:00');
+  return new Date(t.created_at);
+}
 function normCat(c){return (c||'Other').trim().toLowerCase();}
 function getBudgetFor(cat){
   const target=normCat(cat);
@@ -861,7 +877,15 @@ async function forgotPassword(){
   if(error){err.textContent=error.message;err.style.display='block';return;}
   alert('Password reset email sent to '+email+'. Check your inbox and follow the link to set a new password.');
 }
-async function doLogout(){await sb.auth.signOut();currentUser=null;userTransactions=[];userGoals=[];userBudgets={};monthlyIncome=0;show('s-landing');}
+async function doLogout(){
+  await sb.auth.signOut();
+  currentUser=null;
+  userTransactions=[];userGoals=[];userBudgets={};userRecurring=[];
+  monthlyIncome=0;userCurrency='USD';
+  isPro=false;aiQuestionsCount=0;aiQuestionsMonth=null;
+  chatHistory=[];aiContext='';
+  show('s-landing');
+}
 
 // ONBOARDING
 let obIncome=0,obGoalName='',obGoalTarget=0;
@@ -919,7 +943,7 @@ async function loadUserData(){
 // DASHBOARD
 function updateDashboard(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   const totalIncome=monthlyIncome>0?monthlyIncome:income;
@@ -937,7 +961,7 @@ function updateDashboard(){
   updateSpendingChart();
   updateHomeInsights(income,spent,saved,savingsRate);
   const recent=userTransactions.slice(0,5);
-  const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
+  const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
   document.getElementById('home-transactions').innerHTML=rHTML||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>';
 }
 
@@ -956,7 +980,7 @@ function buildChartData(){
     const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     for(let i=6;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
-      const dayTxns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
+      const dayTxns=userTransactions.filter(t=>{const td=txDate(t);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
       const inc=dayTxns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
       const sp=dayTxns.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
       data.push({label:days[d.getDay()],income:inc,spent:sp});
@@ -966,7 +990,7 @@ function buildChartData(){
     for(let i=5;i>=0;i--){
       const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7));
       const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7)-6);
-      const wkTxns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td>=new Date(start.getFullYear(),start.getMonth(),start.getDate())&&td<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);});
+      const wkTxns=userTransactions.filter(t=>{const td=txDate(t);return td>=new Date(start.getFullYear(),start.getMonth(),start.getDate())&&td<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);});
       const inc=wkTxns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
       const sp=wkTxns.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
       data.push({label:i===0?'This wk':`${start.getDate()}/${start.getMonth()+1}`,income:inc,spent:sp});
@@ -977,7 +1001,7 @@ function buildChartData(){
     for(let i=5;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
       const m=d.getMonth();const y=d.getFullYear();
-      const monthTxns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getMonth()===m&&td.getFullYear()===y;});
+      const monthTxns=userTransactions.filter(t=>{const td=txDate(t);return td.getMonth()===m&&td.getFullYear()===y;});
       const inc=(monthlyIncome>0?monthlyIncome:monthTxns.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0));
       const sp=monthTxns.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
       data.push({label:months[m],income:inc,spent:sp});
@@ -1001,7 +1025,7 @@ function updateSpendingForecast(){
   const now=new Date();
   const dayOfMonth=now.getDate();
   const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const spentSoFar=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+  const spentSoFar=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   if(spentSoFar<=0||dayOfMonth<2){el.textContent='';return;}
   const projected=(spentSoFar/dayOfMonth)*daysInMonth;
   el.textContent=`📈 At this pace, you'll spend about ${fmt(projected)} this month`;
@@ -1017,7 +1041,7 @@ function buildChartPeriods(range){
     const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     for(let i=6;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
-      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
+      const txns=userTransactions.filter(t=>{const td=txDate(t);return td.getFullYear()===d.getFullYear()&&td.getMonth()===d.getMonth()&&td.getDate()===d.getDate();});
       periods.push({label:`${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`,txns});
     }
   } else if(range==='weekly'){
@@ -1026,7 +1050,7 @@ function buildChartPeriods(range){
       const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7)-6);
       const s=new Date(start.getFullYear(),start.getMonth(),start.getDate());
       const e=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
-      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td>=s&&td<=e;});
+      const txns=userTransactions.filter(t=>{const td=txDate(t);return td>=s&&td<=e;});
       periods.push({label:i===0?'This week':`Week of ${start.getDate()}/${start.getMonth()+1}`,txns});
     }
   } else {
@@ -1034,7 +1058,7 @@ function buildChartPeriods(range){
     for(let i=5;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
       const m=d.getMonth();const y=d.getFullYear();
-      const txns=userTransactions.filter(t=>{const td=new Date(t.date||t.created_at);return td.getMonth()===m&&td.getFullYear()===y;});
+      const txns=userTransactions.filter(t=>{const td=txDate(t);return td.getMonth()===m&&td.getFullYear()===y;});
       periods.push({label:`${months[m]} ${y}`,txns});
     }
   }
@@ -1076,13 +1100,13 @@ function renderChartDetail(){
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Spent</div><div style="font-size:18px;font-weight:800">${fmt(grandSpent)}</div></div>
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(grandIncome)}</div></div>
     <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / ${unit.slice(0,-1)}</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.label}</div></div>
+    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.spent>0?`${biggest.label} · ${fmt(biggest.spent)}`:'—'}</div></div>
   </div></div>`;
 
   content+=periods.slice().reverse().map(p=>{
     const net=p.income-p.spent;
     const txHtml=p.txns.length>0
-      ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
+      ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
       : `<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:6px 2px">No activity this ${detailRange==='daily'?'day':detailRange==='weekly'?'week':'month'}</div>`;
     return `<div class="glass" style="padding:13px 15px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -1103,7 +1127,7 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   const insights=[];
   const byCat={};
   const now=new Date();
-  userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
   Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${cat} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${cat} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${cat} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${cat} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
   if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
@@ -1125,7 +1149,7 @@ function checkUpcomingBills(){
       const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
       const when=daysUntil===0?'today':daysUntil===1?'tomorrow':`in ${daysUntil} days`;
       const kind=r.amount<0?'payment':'income';
-      banners.push(`<div class="alert-banner alert-warning" style="display:block;margin-bottom:4px">🔔 ${r.name} — ${kind} of ${amt} due ${when}</div>`);
+      banners.push(`<div class="alert-banner alert-warning" style="display:block;margin-bottom:4px">🔔 ${esc(r.name)} — ${kind} of ${amt} due ${when}</div>`);
     }
   });
   el.innerHTML=banners.slice(0,3).join('');
@@ -1135,7 +1159,7 @@ function checkBudgetAlerts(){
   const now=new Date();
   const alerts=[];
   const byCat={};
-  userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+  userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
   Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
 }
@@ -1165,8 +1189,8 @@ function checkCelebrations(){
       const id=`goal_${g.id}_${tier}`;
       if(!dismissed.includes(id)){
         const msg=tier===100
-          ? `You hit your "${g.name}" goal — ${fmt(g.target)} saved. Incredible work. 🏆`
-          : `You're ${tier}% of the way to "${g.name}". Only ${fmt(parseFloat(g.target)-parseFloat(g.current))} to go — keep going! 💪`;
+          ? `You hit your "${esc(g.name)}" goal — ${fmt(g.target)} saved. Incredible work. 🏆`
+          : `You're ${tier}% of the way to "${esc(g.name)}". Only ${fmt(parseFloat(g.target)-parseFloat(g.current))} to go — keep going! 💪`;
         cels.push({id,title:tier===100?'🎉 Goal Complete!':`🎯 ${tier}% to Your Goal!`,body:msg});
       }
     }
@@ -1174,7 +1198,7 @@ function checkCelebrations(){
 
   // Strong savings month
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   const rate=income>0?Math.round(((income-spent)/income)*100):0;
@@ -1213,7 +1237,7 @@ function filterTransactions(){
 }
 function updateSpending(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;});
   const total=thisMonth.reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   document.getElementById('spend-total').textContent=fmt(total);
   document.getElementById('spend-subtitle').textContent=total>0?`This month's spending`:'No spending recorded this month';
@@ -1225,7 +1249,7 @@ function updateSpending(){
 }
 function renderAllTransactions(){
   const txns=filteredTxns||userTransactions;
-  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}${t.recurring_id?' <span title="Recurring" style="font-size:10px">🔁</span>':''}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
+  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}${t.recurring_id?' <span title="Recurring" style="font-size:10px">🔁</span>':''}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
   document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
 }
 
@@ -1240,34 +1264,51 @@ async function addTransaction(){
   const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
   const {error}=await sb.from('transactions').insert({user_id:currentUser.id,name,amount:finalAmount,category,date,currency:userCurrency});
   if(error){alert('Error: '+error.message);return;}
-  document.getElementById('tx-name').value='';document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='';
+  document.getElementById('tx-name').value='';document.getElementById('tx-amount').value='';document.getElementById('tx-category').value='';document.getElementById('tx-date').value='';
   closeModal('modal-add-tx');await loadUserData();
 }
 
 // RECURRING TRANSACTIONS
 function advanceDate(dateStr,frequency){
   const d=new Date(dateStr+'T00:00:00');
-  if(frequency==='weekly'){d.setDate(d.getDate()+7);}
-  else{d.setMonth(d.getMonth()+1);}
+  if(frequency==='weekly'){
+    d.setDate(d.getDate()+7);
+  } else {
+    // Naive d.setMonth(d.getMonth()+1) breaks for month-end dates: Jan 31 + 1 month
+    // overflows into "Feb 31", which doesn't exist, and JS silently rolls it to Mar 3 —
+    // a jarring, wrong-looking jump. Clamp to the target month's actual last day instead.
+    const origDay=d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth()+1);
+    const lastDayOfMonth=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    d.setDate(Math.min(origDay,lastDayOfMonth));
+  }
   return d.toISOString().split('T')[0];
 }
+let recurringInProgress=false;
 async function processRecurring(){
   if(!currentUser)return;
-  const {data:rules}=await sb.from('recurring').select('*').eq('user_id',currentUser.id).eq('active',true);
-  if(!rules||!rules.length)return;
-  const today=new Date().toISOString().split('T')[0];
-  for(const r of rules){
-    let next=r.next_date;
-    let guard=0;
-    // Create an occurrence for every due date up to today (catches missed months), capped for safety
-    while(next<=today && guard<60){
-      await sb.from('transactions').insert({user_id:currentUser.id,name:r.name,amount:r.amount,category:r.category,date:next,currency:r.currency||userCurrency,recurring_id:r.id});
-      next=advanceDate(next,r.frequency);
-      guard++;
+  if(recurringInProgress)return; // avoid double-creating transactions if this gets triggered twice in quick succession
+  recurringInProgress=true;
+  try{
+    const {data:rules}=await sb.from('recurring').select('*').eq('user_id',currentUser.id).eq('active',true);
+    if(!rules||!rules.length)return;
+    const today=new Date().toISOString().split('T')[0];
+    for(const r of rules){
+      let next=r.next_date;
+      let guard=0;
+      // Create an occurrence for every due date up to today (catches missed months), capped for safety
+      while(next<=today && guard<60){
+        await sb.from('transactions').insert({user_id:currentUser.id,name:r.name,amount:r.amount,category:r.category,date:next,currency:r.currency||userCurrency,recurring_id:r.id});
+        next=advanceDate(next,r.frequency);
+        guard++;
+      }
+      if(next!==r.next_date){
+        await sb.from('recurring').update({next_date:next}).eq('id',r.id);
+      }
     }
-    if(next!==r.next_date){
-      await sb.from('recurring').update({next_date:next}).eq('id',r.id);
-    }
+  } finally {
+    recurringInProgress=false;
   }
 }
 async function addRecurring(){
@@ -1281,7 +1322,7 @@ async function addRecurring(){
   const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
   const {error}=await sb.from('recurring').insert({user_id:currentUser.id,name,amount:finalAmount,category,currency:userCurrency,frequency,next_date:startDate,active:true});
   if(error){alert('Error: '+error.message);return;}
-  document.getElementById('rec-name').value='';document.getElementById('rec-amount').value='';document.getElementById('rec-category').value='';
+  document.getElementById('rec-name').value='';document.getElementById('rec-amount').value='';document.getElementById('rec-category').value='';document.getElementById('rec-date').value='';
   closeModal('modal-add-recurring');await loadUserData();
 }
 function renderRecurring(){
@@ -1299,7 +1340,7 @@ function renderRecurring(){
     const c=CURRENCIES[r.currency]||curCfg();
     const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
-      <div><div style="font-size:13px;font-weight:600;color:#fff">${getCatIcon(r.category)} ${r.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
+      <div><div style="font-size:13px;font-weight:600;color:#fff">${getCatIcon(r.category)} ${esc(r.name)}</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
       <button onclick="deleteRecurring('${r.id}')" style="background:rgba(255,100,80,0.18);border:none;color:#ff8877;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
     </div>`;
   }).join('');
@@ -1321,6 +1362,7 @@ function openEditTx(id){
   document.getElementById('edit-tx-name').value=t.name;
   document.getElementById('edit-tx-amount').value=Math.abs(t.amount);
   document.getElementById('edit-tx-category').value=t.category||'';
+  document.getElementById('edit-tx-date').value=(t.date||t.created_at||'').split('T')[0];
   openModal('modal-edit-tx');
 }
 async function saveEditTransaction(){
@@ -1328,10 +1370,11 @@ async function saveEditTransaction(){
   const name=document.getElementById('edit-tx-name').value.trim();
   const amount=parseFloat(document.getElementById('edit-tx-amount').value);
   const category=document.getElementById('edit-tx-category').value.trim();
+  const date=document.getElementById('edit-tx-date').value;
   const orig=userTransactions.find(x=>x.id===id);
   if(!orig)return;
   const finalAmount=orig.amount<0?-Math.abs(amount):Math.abs(amount);
-  await sb.from('transactions').update({name,amount:finalAmount,category}).eq('id',id);
+  await sb.from('transactions').update({name,amount:finalAmount,category,date:date||orig.date}).eq('id',id);
   closeModal('modal-edit-tx');await loadUserData();
 }
 async function deleteTx(id){if(!confirm('Delete this transaction?'))return;await sb.from('transactions').delete().eq('id',id);await loadUserData();}
@@ -1342,23 +1385,24 @@ function updateGoals(){
     const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
     const left=parseFloat(g.target)-parseFloat(g.current);
     const isComplete=pct>=100;
-    return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${isComplete?'🏆':'🎯'}</div><div><div class="goal-name">${g.name}${isComplete?' ✓':''}</div><div class="goal-date">${g.deadline?new Date(g.deadline).toLocaleDateString():'No deadline'}</div></div></div><div style="text-align:right"><div class="goal-pct" style="color:${isComplete?'#7fff7f':'#fff'}">${pct}%</div></div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${isComplete?'linear-gradient(90deg,#7fff7f,#4dff4d)':'linear-gradient(90deg,rgba(255,255,255,0.5),#fff)'}"></div></div><div class="goal-nums"><span>${fmt(g.current)} saved</span><span>${isComplete?'Goal complete! 🎉':fmt(left)+' left of '+fmt(g.target)}</span></div><div class="goal-actions"><button class="btn-small btn-green" onclick="openContributeGoal('${g.id}','${g.name}')">+ Add Savings</button><button class="btn-small btn-blue" style="margin-left:4px" onclick="switchTab('advisor')">Ask Thrive AI</button><button class="btn-small btn-red" style="margin-left:4px" onclick="deleteGoal('${g.id}')">✕</button></div></div>`;
+    return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${isComplete?'🏆':'🎯'}</div><div><div class="goal-name">${esc(g.name)}${isComplete?' ✓':''}</div><div class="goal-date">${g.deadline?new Date(g.deadline+'T00:00:00').toLocaleDateString():'No deadline'}</div></div></div><div style="text-align:right"><div class="goal-pct" style="color:${isComplete?'#7fff7f':'#fff'}">${pct}%</div></div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${isComplete?'linear-gradient(90deg,#7fff7f,#4dff4d)':'linear-gradient(90deg,rgba(255,255,255,0.5),#fff)'}"></div></div><div class="goal-nums"><span>${fmt(g.current)} saved</span><span>${isComplete?'Goal complete! 🎉':fmt(left)+' left of '+fmt(g.target)}</span></div><div class="goal-actions"><button class="btn-small btn-green" onclick="openContributeGoal('${g.id}')">+ Add Savings</button><button class="btn-small btn-blue" style="margin-left:4px" onclick="switchTab('advisor')">Ask Thrive AI</button><button class="btn-small btn-red" style="margin-left:4px" onclick="deleteGoal('${g.id}')">✕</button></div></div>`;
   }).join('');
   document.getElementById('goals-list').innerHTML=html||`<div class="glass" style="padding:18px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎯</div><div style="font-size:13px;color:rgba(255,255,255,0.62);margin-bottom:12px">No goals yet. Set your first financial goal!</div><button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button></div>`;
 }
 async function addGoal(){
   const name=document.getElementById('goal-name').value.trim();
-  const target=parseFloat(document.getElementById('goal-target').value);
-  const current=parseFloat(document.getElementById('goal-current').value)||0;
+  const target=Math.abs(parseFloat(document.getElementById('goal-target').value));
+  const current=Math.abs(parseFloat(document.getElementById('goal-current').value))||0;
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target){alert('Please fill in goal name and target amount.');return;}
   await sb.from('goals').insert({user_id:currentUser.id,name,target,current,deadline:deadline||null});
   document.getElementById('goal-name').value='';document.getElementById('goal-target').value='';document.getElementById('goal-current').value='';document.getElementById('goal-deadline').value='';
   closeModal('modal-add-goal');await loadUserData();
 }
-function openContributeGoal(id,name){
+function openContributeGoal(id){
+  const goal=userGoals.find(g=>g.id===id);
   document.getElementById('contribute-goal-id').value=id;
-  document.getElementById('contribute-goal-name').textContent=`Adding savings to: ${name}`;
+  document.getElementById('contribute-goal-name').textContent=`Adding savings to: ${goal?goal.name:''}`;
   document.getElementById('contribute-amount').value='';
   openModal('modal-contribute-goal');
 }
@@ -1374,10 +1418,14 @@ async function contributeToGoal(){
 }
 async function deleteGoal(id){if(!confirm('Delete this goal?'))return;await sb.from('goals').delete().eq('id',id);await loadUserData();}
 async function saveBudget(){
-  const category=document.getElementById('budget-category').value.trim();
-  const amount=parseFloat(document.getElementById('budget-amount').value);
-  if(!category){alert('Please enter a category name.');return;}
+  const typedCategory=document.getElementById('budget-category').value.trim();
+  const amount=Math.abs(parseFloat(document.getElementById('budget-amount').value));
+  if(!typedCategory){alert('Please enter a category name.');return;}
   if(!amount){alert('Please enter a budget amount.');return;}
+  // If a budget already exists for this category under different casing (e.g. "food" vs "Food"),
+  // update that existing row instead of silently creating a confusing duplicate.
+  const existingKey=Object.keys(userBudgets).find(k=>normCat(k)===normCat(typedCategory));
+  const category=existingKey||typedCategory;
   await sb.from('budgets').upsert({user_id:currentUser.id,category,amount},{onConflict:'user_id,category'});
   document.getElementById('budget-category').value='';document.getElementById('budget-amount').value='';
   closeModal('modal-add-budget');await loadUserData();
@@ -1414,6 +1462,7 @@ async function editIncome(){
   const val=prompt('Enter your monthly income ('+curSym()+'):',monthlyIncome||'');
   if(val===null)return;
   const inc=parseFloat(val)||0;
+  if(inc<0){alert('Income can\'t be negative.');return;}
   await sb.from('profiles').upsert({id:currentUser.id,monthly_income:inc});
   monthlyIncome=inc;
   updateProfile();updateDashboard();
@@ -1425,10 +1474,14 @@ async function clearAllData(){
   await loadUserData();
   alert('All data cleared.');
 }
+function csvEscape(val){
+  const s=String(val==null?'':val);
+  return `"${s.replace(/"/g,'""')}"`;
+}
 function exportCSV(){
   if(userTransactions.length===0){alert('No transactions to export.');return;}
   const header='Date,Name,Category,Amount\n';
-  const rows=userTransactions.map(t=>`${new Date(t.date||t.created_at).toLocaleDateString()},"${t.name}",${t.category||'Other'},${t.amount}`).join('\n');
+  const rows=userTransactions.map(t=>`${txDate(t).toLocaleDateString()},${csvEscape(t.name)},${csvEscape(t.category||'Other')},${t.amount}`).join('\n');
   const blob=new Blob([header+rows],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='thrive-transactions.csv';a.click();
@@ -1438,7 +1491,7 @@ function exportCSV(){
 function showMonthlySummary(){
   const now=new Date();
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   const saved=income-spent;
@@ -1605,7 +1658,7 @@ function switchTab(tab){
 function closeStatDetail(){switchTab('home');document.getElementById('nav-home').classList.add('active');}
 function openStatDetail(type){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const monthLabel=`${months[now.getMonth()]} ${now.getFullYear()}`;
   let title='',sub='',content='';
@@ -1614,7 +1667,7 @@ function openStatDetail(type){
     title='All Transactions';sub=`${userTransactions.length} total`;
     if(userTransactions.length===0){content=`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(255,255,255,0.55)">No transactions yet.</div>`;}
     else{
-      content=`<div class="tx-card glass">`+userTransactions.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Other'}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`;
+      content=`<div class="tx-card glass">`+userTransactions.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`;
     }
   }
 
@@ -1642,7 +1695,7 @@ function openStatDetail(type){
     let body='';
     if(monthlyIncome>0){body+=`<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">💰</div><div class="cat-name">Set Monthly Income</div></div><div class="cat-amount" style="color:#7fff7f">${fmt(monthlyIncome)}</div></div></div>`;}
     if(incTxns.length>0){
-      body+=`<div class="section-label" style="margin-top:8px">Income Transactions</div><div class="tx-card glass">`+incTxns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${t.name}</div><div class="tx-date">${new Date(t.date||t.created_at).toLocaleDateString()} · ${t.category||'Income'}</div></div><div class="tx-amount" style="color:#7fff7f">+${fmt(t.amount)}</div></div>`).join('')+`</div>`;
+      body+=`<div class="section-label" style="margin-top:8px">Income Transactions</div><div class="tx-card glass">`+incTxns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Income')}</div></div><div class="tx-amount" style="color:#7fff7f">+${fmt(t.amount)}</div></div>`).join('')+`</div>`;
     }
     content=body||`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(255,255,255,0.55)">No income recorded this month. Set your monthly income in Profile.</div>`;
   }
@@ -1657,7 +1710,7 @@ function openStatDetail(type){
     if(userGoals.length>0){
       content+=`<div class="section-label">Toward Your Goals</div>`+userGoals.map(g=>{
         const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
-        return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${pct>=100?'🏆':'🎯'}</div><div><div class="goal-name">${g.name}</div><div class="goal-date">${fmt(g.current)} of ${fmt(g.target)}</div></div></div><div class="goal-pct">${pct}%</div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div></div>`;
+        return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${pct>=100?'🏆':'🎯'}</div><div><div class="goal-name">${esc(g.name)}</div><div class="goal-date">${fmt(g.current)} of ${fmt(g.target)}</div></div></div><div class="goal-pct">${pct}%</div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div></div>`;
       }).join('');
     }
   }
@@ -1673,7 +1726,7 @@ function openStatDetail(type){
 let aiContext='';
 function updateAdvisorContext(){
   const now=new Date();
-  const thisMonth=userTransactions.filter(t=>{const d=new Date(t.date||t.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
   const spent=thisMonth.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
   const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
@@ -1714,14 +1767,21 @@ async function clearChat(){
 async function loadChatHistory(){
   if(!currentUser)return;
   const {data:msgs}=await sb.from('chat_messages').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true}).limit(50);
-  if(!msgs||!msgs.length)return; // keep the default welcome message
-  chatHistory=msgs.map(m=>({role:m.role,content:m.content}));
   const box=document.getElementById('messages');
+  if(!msgs||!msgs.length){
+    // No saved history for this account — reset to the default welcome message.
+    // Without this, a previous account's messages (still sitting in memory/DOM from
+    // an earlier session on this same browser) would stay visible to whoever's now logged in.
+    chatHistory=[];
+    box.innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Hello! I'm Thrive AI, your personal finance coach. Add some transactions and I'll give you personalised insights based on your real numbers. I can make mistakes, so please double-check anything important. What would you like to know?</div></div></div>`;
+    return;
+  }
+  chatHistory=msgs.map(m=>({role:m.role,content:m.content}));
   box.innerHTML=msgs.map(m=>{
     if(m.role==='user'){
-      return `<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${m.content}</div></div></div>`;
+      return `<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${esc(m.content)}</div></div></div>`;
     }
-    return `<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${m.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+    return `<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(m.content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
   }).join('');
   box.scrollTop=box.scrollHeight;
 }
@@ -1758,9 +1818,9 @@ async function sendMessage(){
 
   input.value='';
   const msgs=document.getElementById('messages');
-  msgs.innerHTML+=`<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${text}</div></div></div>`;
+  msgs.innerHTML+=`<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${esc(text)}</div></div></div>`;
   chatHistory.push({role:'user',content:text});
-  if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'user',content:text});
+  if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'user',content:text}).then(({error})=>{if(error)console.error('Failed to save chat message:',error);});
   const tid='t'+Date.now();
   msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
   msgs.scrollTop=msgs.scrollHeight;
@@ -1785,7 +1845,7 @@ async function sendMessage(){
       console.error('Advisor API error:',res.status,data);
       const tEl=document.getElementById(tid);if(tEl)tEl.remove();
       const errText=data.error||'Something went wrong. Please try again.';
-      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${errText}<br><br>This is educational information, not financial advice.</div></div></div>`;
+      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(errText)}<br><br>This is educational information, not financial advice.</div></div></div>`;
       msgs.scrollTop=msgs.scrollHeight;
       return;
     }
@@ -1802,8 +1862,8 @@ async function sendMessage(){
     }
 
     chatHistory.push({role:'assistant',content:reply});
-    if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'assistant',content:reply});
-    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+    if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'assistant',content:reply}).then(({error})=>{if(error)console.error('Failed to save chat message:',error);});
+    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(reply).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
     if(detectedActions.length)renderIntakeCard(detectedActions,msgs);
     await recordAiQuestionUsed(); // only counts against the limit on a successful reply
   }catch(err){
@@ -1827,9 +1887,9 @@ function renderIntakeCard(actions,msgs){
   const rows=actions.map((a,i)=>{
     let label='',amount='';
     if(a.type==='monthly_income'){label='💰 Monthly income';amount=a.amount;}
-    else if(a.type==='transaction'){label=`${getCatIcon(a.category)} ${a.kind==='income'?'Income':'Expense'}: ${a.name}`;amount=a.amount;}
-    else if(a.type==='goal'){label=`🎯 Goal: ${a.name} (target)`;amount=a.target;}
-    else if(a.type==='recurring'){label=`🔁 Recurring ${a.kind==='income'?'income':'expense'}: ${a.name} (${a.frequency||'monthly'})`;amount=a.amount;}
+    else if(a.type==='transaction'){label=`${getCatIcon(a.category)} ${a.kind==='income'?'Income':'Expense'}: ${esc(a.name)}`;amount=a.amount;}
+    else if(a.type==='goal'){label=`🎯 Goal: ${esc(a.name)} (target)`;amount=a.target;}
+    else if(a.type==='recurring'){label=`🔁 Recurring ${a.kind==='income'?'income':'expense'}: ${esc(a.name)} (${a.frequency||'monthly'})`;amount=a.amount;}
     else return '';
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
       <input type="checkbox" class="intake-check" data-idx="${i}" checked style="width:15px;height:15px;flex-shrink:0">
