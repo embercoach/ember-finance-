@@ -1128,7 +1128,7 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   const byCat={};
   const now=new Date();
   userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${cat} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${cat} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${cat} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${cat} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${esc(cat)} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${esc(cat)} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${esc(cat)} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${esc(cat)} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
   if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
   if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
@@ -1160,7 +1160,7 @@ function checkBudgetAlerts(){
   const alerts=[];
   const byCat={};
   userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${cat} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
+  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget)alerts.push(`<div class="alert-banner alert-danger" style="display:block;margin-bottom:4px">⚠️ ${esc(cat)} is ${fmt(amt-budget)} over your ${fmt(budget)} budget</div>`);});
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
 }
 
@@ -1235,6 +1235,7 @@ function filterTransactions(){
   filteredTxns=q?userTransactions.filter(t=>t.name.toLowerCase().includes(q)||(t.category||'').toLowerCase().includes(q)):null;
   renderAllTransactions();
 }
+let catCardCategories=[];
 function updateSpending(){
   const now=new Date();
   const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;});
@@ -1243,7 +1244,8 @@ function updateSpending(){
   document.getElementById('spend-subtitle').textContent=total>0?`This month's spending`:'No spending recorded this month';
   const byCat={};
   thisMonth.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{const budget=getBudgetFor(cat)||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
+  catCardCategories=[];
+  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt],idx)=>{catCardCategories[idx]=cat;const budget=getBudgetFor(cat)||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${esc(cat)}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div><div style="text-align:right;margin-top:5px"><span class="form-link" style="font-size:10px;color:rgba(255,255,255,0.45);text-decoration:none" onclick="deleteBudget(${idx})">Remove budget</span></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
   document.getElementById('categories-list').innerHTML=catHTML;
   renderAllTransactions();
 }
@@ -1429,6 +1431,15 @@ async function saveBudget(){
   await sb.from('budgets').upsert({user_id:currentUser.id,category,amount},{onConflict:'user_id,category'});
   document.getElementById('budget-category').value='';document.getElementById('budget-amount').value='';
   closeModal('modal-add-budget');await loadUserData();
+}
+async function deleteBudget(idx){
+  const cat=catCardCategories[idx];
+  if(!cat)return;
+  const existingKey=Object.keys(userBudgets).find(k=>normCat(k)===normCat(cat));
+  if(!existingKey)return;
+  if(!confirm(`Remove the budget for "${existingKey}"? Your transactions in this category will stay, only the budget cap is removed.`))return;
+  await sb.from('budgets').delete().eq('user_id',currentUser.id).eq('category',existingKey);
+  await loadUserData();
 }
 
 // PROFILE
@@ -1682,7 +1693,7 @@ function openStatDetail(type){
     else{
       content=`<div class="section-label">By Category</div>`+entries.map(([cat,amt])=>{
         const pct=total>0?Math.round((amt/total)*100):0;
-        return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${cat}</div></div><div class="cat-amount">${fmt(amt)}</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:rgba(255,150,80,0.6)"></div></div><div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:4px">${pct}% of spending</div></div>`;
+        return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${esc(cat)}</div></div><div class="cat-amount">${fmt(amt)}</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:rgba(255,150,80,0.6)"></div></div><div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:4px">${pct}% of spending</div></div>`;
       }).join('');
     }
   }
