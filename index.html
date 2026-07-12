@@ -242,6 +242,26 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-edit-recurring">
+  <div class="modal glass-strong">
+    <div class="modal-title">Edit Recurring <button class="modal-close" onclick="closeModal('modal-edit-recurring')">×</button></div>
+    <input type="hidden" id="edit-rec-id">
+    <label class="form-label">Name</label>
+    <input class="form-input" id="edit-rec-name" placeholder="e.g. Rent, Salary, Netflix">
+    <label class="form-label">Amount (<span class="cur-sym">$</span>)</label>
+    <input class="form-input" id="edit-rec-amount" type="number" placeholder="0.00" step="0.01">
+    <label class="form-label">Type</label>
+    <select class="form-select" id="edit-rec-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+    <label class="form-label">Category</label>
+    <input class="form-input" id="edit-rec-category" placeholder="e.g. Housing, Income, Subscriptions...">
+    <label class="form-label">Repeats</label>
+    <select class="form-select" id="edit-rec-frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option></select>
+    <label class="form-label">Next due date</label>
+    <input class="form-input" id="edit-rec-date" type="date">
+    <button class="btn-primary" onclick="saveEditRecurring()">Save Changes ✓</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-add-goal">
   <div class="modal glass-strong">
     <div class="modal-title">Add Goal <button class="modal-close" onclick="closeModal('modal-add-goal')">×</button></div>
@@ -1343,7 +1363,10 @@ function renderRecurring(){
     const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
       <div><div style="font-size:13px;font-weight:600;color:#fff">${getCatIcon(r.category)} ${esc(r.name)}</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
-      <button onclick="deleteRecurring('${r.id}')" style="background:rgba(255,100,80,0.18);border:none;color:#ff8877;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="openEditRecurring('${r.id}')" style="background:rgba(100,180,255,0.18);border:none;color:#88ccff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px">✎</button>
+        <button onclick="deleteRecurring('${r.id}')" style="background:rgba(255,100,80,0.18);border:none;color:#ff8877;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1351,6 +1374,34 @@ async function deleteRecurring(id){
   if(!confirm('Stop this recurring item? Transactions already created will stay.'))return;
   await sb.from('recurring').delete().eq('id',id);
   await loadUserData();openModal('modal-recurring');
+}
+function openEditRecurring(id){
+  const r=userRecurring.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('edit-rec-id').value=id;
+  document.getElementById('edit-rec-name').value=r.name;
+  document.getElementById('edit-rec-amount').value=Math.abs(parseFloat(r.amount));
+  document.getElementById('edit-rec-type').value=r.amount<0?'expense':'income';
+  document.getElementById('edit-rec-category').value=r.category||'';
+  document.getElementById('edit-rec-frequency').value=r.frequency==='weekly'?'weekly':'monthly';
+  document.getElementById('edit-rec-date').value=r.next_date;
+  closeModal('modal-recurring');
+  openModal('modal-edit-recurring');
+}
+async function saveEditRecurring(){
+  const id=document.getElementById('edit-rec-id').value;
+  const name=document.getElementById('edit-rec-name').value.trim();
+  const amount=Math.abs(parseFloat(document.getElementById('edit-rec-amount').value));
+  const type=document.getElementById('edit-rec-type').value;
+  const category=document.getElementById('edit-rec-category').value.trim()||'Other';
+  const frequency=document.getElementById('edit-rec-frequency').value==='weekly'?'weekly':'monthly';
+  const nextDate=document.getElementById('edit-rec-date').value;
+  if(!name||!amount){alert('Please fill in name and amount.');return;}
+  const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
+  await sb.from('recurring').update({name,amount:finalAmount,category,frequency,next_date:nextDate}).eq('id',id);
+  closeModal('modal-edit-recurring');
+  await loadUserData();
+  openModal('modal-recurring');
 }
 async function clearAllRecurring(){
   if(!confirm(`Remove all ${userRecurring.length} recurring items? Transactions already created will stay — this only stops future ones.`))return;
