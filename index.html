@@ -6,6 +6,7 @@
 <title>Thrive AI — Personal Finance Coach</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:0}
@@ -728,7 +729,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ Subscription audit</div>
             <div class="plan-feature">✓ Budget overspend alerts</div>
           </div>
-          <button class="plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="alert('Payment integration coming soon! 🌱')">Start Free Trial</button>
+          <button class="plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
         </div>
         <div class="plan-card glass">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
@@ -737,7 +738,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           </div>
           <div class="plan-price">$99<span>/year</span></div>
           <div style="font-size:12px;color:rgba(255,255,255,0.58);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
-          <button class="plan-btn btn-outline" onclick="alert('Payment integration coming soon! 🌱')">Get Annual Plan</button>
+          <button class="plan-btn btn-outline" onclick="openPaddleCheckout(PADDLE_PRICE_ANNUAL)">Get Annual Plan</button>
         </div>
         <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Thrive AI is not a licensed financial adviser</div>
@@ -787,6 +788,34 @@ const SUPA_KEY='sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
 const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
+
+// Paddle checkout — sandbox mode for now. Swap PADDLE_TOKEN to a live token
+// (and remove the Environment.set line) when going live.
+const PADDLE_TOKEN='test_8dcc53e2b9a23fed5f43862a6c3';
+const PADDLE_PRICE_MONTHLY='pri_01ky4bwbq5g89sp1nkf3g94dsy';
+const PADDLE_PRICE_ANNUAL='pri_01ky4c31z2edqs2hjw9k4bmdx0';
+Paddle.Environment.set('sandbox');
+Paddle.Initialize({
+  token:PADDLE_TOKEN,
+  eventCallback:function(data){
+    // When checkout completes, tell the user and refresh their plan status.
+    // The actual is_pro flip happens via the Paddle webhook on the backend —
+    // this just gives immediate feedback in the UI.
+    if(data.name==='checkout.completed'){
+      alert('Payment successful! Your account will be upgraded to Pro shortly. 🌱');
+      switchTab('home');
+    }
+  }
+});
+
+function openPaddleCheckout(priceId){
+  if(!currentUser){alert('Please log in first.');return;}
+  Paddle.Checkout.open({
+    items:[{priceId:priceId,quantity:1}],
+    customer:{email:currentUser.email},
+    customData:{userId:currentUser.id}
+  });
+}
 let userRecurring=[];
 let chatHistory=[];
 let isPro=false,aiQuestionsCount=0,aiQuestionsMonth=null;
