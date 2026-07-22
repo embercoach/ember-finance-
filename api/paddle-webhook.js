@@ -1,6 +1,7 @@
 // Paddle calls this endpoint whenever a subscription is created, renewed,
 // updated, or canceled. We verify the request really came from Paddle,
-// then flip is_pro on/off in Supabase accordingly.
+// then flip is_pro on/off in Supabase accordingly, and store the
+// subscription ID so the user can cancel it later from inside the app.
 
 import crypto from 'crypto';
 
@@ -26,7 +27,6 @@ function getRawBody(req) {
 function verifySignature(rawBody, signatureHeader, secret) {
   if (!signatureHeader) return false;
 
-  // Paddle's Paddle-Signature header looks like: "ts=1234567890;h1=abcdef..."
   const parts = Object.fromEntries(
     signatureHeader.split(';').map((p) => p.split('='))
   );
@@ -42,7 +42,6 @@ function verifySignature(rawBody, signatureHeader, secret) {
   try {
     return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(h1));
   } catch {
-    // Buffers of different length -> not equal
     return false;
   }
 }
@@ -77,6 +76,7 @@ export default async function handler(req, res) {
   const eventType = event.event_type;
   const data = event.data || {};
   const userId = data.custom_data?.userId;
+  const subscriptionId = data.id;
 
   const supaHeaders = {
     apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     Prefer: 'return=minimal',
   };
 
-  async function setIsPro(isPro) {
+  async function updateProfile(fields) {
     if (!userId) {
       console.error(`No userId in custom_data for event ${eventType}`, data.id);
       return;
@@ -94,10 +94,10 @@ export default async function handler(req, res) {
       await fetch(`${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
         method: 'PATCH',
         headers: supaHeaders,
-        body: JSON.stringify({ is_pro: isPro }),
+        body: JSON.stringify(fields),
       });
     } catch (e) {
-      console.error(`Failed to set is_pro=${isPro} for user ${userId}:`, e);
+      console.error(`Failed to update profile for user ${userId}:`, e);
     }
   }
 
@@ -105,28 +105,23 @@ export default async function handler(req, res) {
     case 'subscription.created':
     case 'subscription.activated':
     case 'subscription.resumed':
-      // Any active subscription status means the user is Pro
-      await setIsPro(true);
+      await updateProfile({ is_pro: true, paddle_subscription_id: subscriptionId });
       break;
 
     case 'subscription.updated':
-      // Could be a plan change, or could be moving into past_due/paused —
-      // only grant Pro if the subscription is actually in an active state.
       if (data.status === 'active' || data.status === 'trialing') {
-        await setIsPro(true);
+        await updateProfile({ is_pro: true, paddle_subscription_id: subscriptionId });
       } else {
-        await setIsPro(false);
+        await updateProfile({ is_pro: false });
       }
       break;
 
     case 'subscription.canceled':
     case 'subscription.paused':
-      await setIsPro(false);
+      await updateProfile({ is_pro: false });
       break;
 
     default:
-      // Other events (transaction.completed, etc.) — nothing to do here,
-      // subscription.* events are what actually control Pro access.
       break;
   }
 
