@@ -675,9 +675,13 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 
         <!-- Account actions -->
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
-          <div class="profile-item" onclick="switchTab('plans')">
+          <div class="profile-item" id="profile-upgrade-row" onclick="switchTab('plans')">
             <div><div class="profile-label">💎 Upgrade to Pro</div><div class="profile-sub">Unlock all features — $12/month</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
+          <div class="profile-item" id="profile-manage-sub-row" style="display:none" onclick="cancelSubscription()">
+            <div><div class="profile-label" style="color:#ff8877">✕ Cancel Subscription</div><div class="profile-sub">You'll keep Pro until your billing period ends</div></div>
+            <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="clearAllData()">
             <div><div class="profile-label">🗑️ Clear All Data</div><div class="profile-sub">Delete all transactions and goals</div></div>
@@ -729,7 +733,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ Subscription audit</div>
             <div class="plan-feature">✓ Budget overspend alerts</div>
           </div>
-          <button class="plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
+          <button class="plan-btn" id="pro-plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
         </div>
         <div class="plan-card glass">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
@@ -815,6 +819,49 @@ function openPaddleCheckout(priceId){
     customer:{email:currentUser.email},
     customData:{userId:currentUser.id}
   });
+}
+
+async function cancelSubscription(){
+  if(!confirm("Cancel your Pro subscription? You'll keep Pro access until the end of your current billing period, then your account moves to the Free plan."))return;
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){alert('Please log in again and retry.');return;}
+  try{
+    const res=await fetch('/api/cancel-subscription',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+session.access_token}
+    });
+    const data=await res.json();
+    if(!res.ok){
+      alert(data.error||'Something went wrong. Please try again or contact support.');
+      return;
+    }
+    alert(data.message||'Your subscription has been canceled and will remain active until the end of the current billing period.');
+    switchTab('profile');
+  }catch(e){
+    console.error('Cancel subscription failed:',e);
+    alert('Something went wrong. Please check your connection and try again.');
+  }
+}
+
+function updatePlansUI(){
+  const btn=document.getElementById('pro-plan-btn');
+  if(btn){
+    if(isPro){
+      btn.textContent='Cancel Subscription';
+      btn.style.background='rgba(255,100,80,0.22)';
+      btn.style.color='#ff8877';
+      btn.onclick=cancelSubscription;
+    } else {
+      btn.textContent='Start Free Trial';
+      btn.style.background='rgba(255,255,255,0.9)';
+      btn.style.color='#2d5a27';
+      btn.onclick=function(){openPaddleCheckout(PADDLE_PRICE_MONTHLY);};
+    }
+  }
+  const upgradeRow=document.getElementById('profile-upgrade-row');
+  const manageRow=document.getElementById('profile-manage-sub-row');
+  if(upgradeRow)upgradeRow.style.display=isPro?'none':'';
+  if(manageRow)manageRow.style.display=isPro?'':'none';
 }
 let userRecurring=[];
 let chatHistory=[];
@@ -986,7 +1033,7 @@ async function loadUserData(){
     aiQuestionsMonth=profile.ai_questions_month||null;
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   }
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();updatePlansUI();
 }
 
 // DASHBOARD
