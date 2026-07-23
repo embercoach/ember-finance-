@@ -1691,7 +1691,7 @@ const TUT_STEPS=[
   {type:'info',tab:'spend',title:'Categories & Search 🔍',body:"Below your budgets, every category you spend in shows up as its own card with a progress bar. Use the search bar to instantly find any past transaction by name or category."},
   {type:'target',tab:'goals',targetSelector:'#tut-target-goal',expectedModalId:'modal-add-goal',title:'Set a Goal 🎯',body:"Tap the glowing button to create your first savings goal."},
   {type:'info',tab:'advisor',title:'Or Just Tell It Your Numbers 💬',body:"Here's a shortcut: you can just <b>type your numbers straight into the chat</b> — like \"I earn R10,000 a month, spend R2,000 on food, and want to save R15,000 for an emergency fund.\" Thrive AI will read it, show you exactly what it wants to add, and let you fix anything before confirming. It even works for setting up recurring payments — just ask it to make something recurring."},
-  {type:'target',tab:'advisor',targetSelector:'#tut-target-advisor',expectedModalId:null,title:'Ask Thrive AI ✨',body:"Tap any of the glowing quick questions to try your AI coach."},
+  {type:'target',tab:'advisor',targetSelector:'#tut-target-advisor',expectedModalId:null,manualAdvance:true,title:'Ask Thrive AI ✨',body:"Tap any of the glowing quick questions to try your AI coach. Take your time reading the reply — tap \"Skip this\" below when you're ready to continue."},
   {type:'target',tab:'profile',targetSelector:'#tut-target-income',expectedModalId:null,title:'Set Your Monthly Income 💰',body:"Tap the glowing row to set your income here directly. This is what powers your savings rate and forecasts app-wide."},
   {type:'target',tab:'profile',targetSelector:'#tut-target-currency',expectedModalId:'modal-currency',title:'Choose Your Currency 💱',body:"Tap the glowing row to switch currencies — every amount across the whole app updates instantly."},
   {type:'target',tab:'profile',targetSelector:'#tut-target-summary',expectedModalId:'modal-monthly-summary',title:'Monthly Summary 📊',body:"Tap the glowing row for a full report card of your month — income, spending, savings rate, and Thrive AI's take on how it went."},
@@ -1765,7 +1765,14 @@ function spotlightTarget(step){
   left=Math.max(10,Math.min(left,window.innerWidth-tipRect.width-10));
   tip.style.top=top+'px';
   tip.style.left=left+'px';
-  el.addEventListener('click',()=>tutorialTargetClicked(step),{once:true});
+  // manualAdvance steps (e.g. the Advisor step, where the person needs time to
+  // read an AI reply) skip this auto-advance entirely. The spotlight tooltip stays
+  // on screen with its own Back / Skip this / End tour links, so the person can
+  // freely use the real feature underneath and move the tour forward themselves
+  // whenever they're ready — instead of being yanked to the next step mid-read.
+  if(!step.manualAdvance){
+    el.addEventListener('click',()=>tutorialTargetClicked(step),{once:true});
+  }
   document.addEventListener('click',tutOutsideClickHandler,true);
 }
 function tutorialTargetClicked(step){
