@@ -53,7 +53,7 @@ export default async function handler(req, res) {
   let profile;
   try {
     const profileRes = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,ai_questions_count,ai_questions_month`,
+      `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,ai_questions_count,ai_questions_month,has_asked_free_question`,
       { headers: supaHeaders }
     );
     const rows = await profileRes.json();
@@ -68,10 +68,14 @@ export default async function handler(req, res) {
   }
 
   const isPro = !!profile.is_pro;
+  const hasUsedFreeTrial = !!profile.has_asked_free_question;
   const thisMonth = currentMonthKey();
   let count = profile.ai_questions_month === thisMonth ? (profile.ai_questions_count || 0) : 0;
 
-  if (!isPro && count >= FREE_AI_LIMIT) {
+  // Everyone's very first question ever is free and doesn't touch the monthly
+  // count — this covers the tutorial's suggested question just as much as any
+  // other first-time use. After that, normal monthly enforcement applies.
+  if (!isPro && hasUsedFreeTrial && count >= FREE_AI_LIMIT) {
     return res.status(403).json({
       error: `You've used all ${FREE_AI_LIMIT} free questions this month. Your questions reset at the start of next month, or you can upgrade to Pro for unlimited conversations.`,
       limitReached: true,
@@ -110,15 +114,23 @@ export default async function handler(req, res) {
     }
 
     if (!isPro) {
-      count += 1;
+      const patchBody = {};
+      if (!hasUsedFreeTrial) {
+        // First question ever — mark it used, but don't touch the monthly count.
+        patchBody.has_asked_free_question = true;
+      } else {
+        count += 1;
+        patchBody.ai_questions_count = count;
+        patchBody.ai_questions_month = thisMonth;
+      }
       try {
         await fetch(`${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
           method: 'PATCH',
           headers: { ...supaHeaders, Prefer: 'return=minimal' },
-          body: JSON.stringify({ ai_questions_count: count, ai_questions_month: thisMonth }),
+          body: JSON.stringify(patchBody),
         });
       } catch (e) {
-        console.error('Failed to update ai_questions_count:', e);
+        console.error('Failed to update AI usage tracking:', e);
       }
     }
 
