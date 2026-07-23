@@ -938,7 +938,23 @@ async function doSignup(){
   const btn=document.getElementById('signup-btn');btn.textContent='Creating...';btn.disabled=true;
   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name}}});
   if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Create My Account 🌱';btn.disabled=false;return;}
-  if(data.user){
+
+  if(data.user && !data.session){
+    // Email confirmation is required and Supabase hasn't issued a session yet.
+    // Any database write right now would silently fail RLS (no auth.uid()),
+    // so stop here and tell the user to confirm their email first.
+    show('s-login');
+    const loginErr=document.getElementById('login-error');
+    loginErr.textContent="Almost there! We've sent a confirmation link to "+email+". Click it, then sign in here.";
+    loginErr.style.display='block';
+    loginErr.style.background='rgba(127,255,127,0.2)';
+    loginErr.style.borderColor='rgba(127,255,127,0.3)';
+    loginErr.style.color='#7fff7f';
+    btn.textContent='Create My Account 🌱';btn.disabled=false;
+    return;
+  }
+
+  if(data.user && data.session){
     await sb.from('profiles').upsert({id:data.user.id,name,email});
     currentUser=data.user;currentUser.name=name;
     show('s-onboard');
