@@ -1713,6 +1713,16 @@ function startTutorial(){
 function clearSpotlight(){
   if(tutCurrentTarget){tutCurrentTarget.classList.remove('tut-glow');tutCurrentTarget=null;}
   document.getElementById('tut-spotlight').style.display='none';
+  document.removeEventListener('click',tutOutsideClickHandler,true);
+}
+function tutOutsideClickHandler(e){
+  // If the tutorial spotlight is active and the user clicks anything other than the
+  // highlighted target (or the tooltip itself), they've wandered off — clear the
+  // spotlight instead of letting it stay stuck on screen over whatever they open next.
+  if(!tutCurrentTarget)return;
+  const tip=document.getElementById('tut-spotlight');
+  if(tutCurrentTarget.contains(e.target)||tip.contains(e.target))return;
+  clearSpotlight();
 }
 function renderTutorialStep(){
   const step=TUT_STEPS[tutStep];
@@ -1750,6 +1760,7 @@ function spotlightTarget(step){
   tip.style.top=top+'px';
   tip.style.left=left+'px';
   el.addEventListener('click',()=>tutorialTargetClicked(step),{once:true});
+  document.addEventListener('click',tutOutsideClickHandler,true);
 }
 function tutorialTargetClicked(step){
   clearSpotlight();
