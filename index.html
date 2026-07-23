@@ -1518,6 +1518,10 @@ async function saveEditTransaction(){
   const date=document.getElementById('edit-tx-date').value;
   const orig=userTransactions.find(x=>x.id===id);
   if(!orig)return;
+  // Guard against blank/invalid amount — without this, a cleared amount field
+  // saves NaN to the database, which then poisons every dashboard total that
+  // sums this transaction (Net Balance, Income, Spent, etc. all show $NaN).
+  if(!name||!amount||isNaN(amount)){alert('Please fill in a valid name and amount.');return;}
   const finalAmount=orig.amount<0?-Math.abs(amount):Math.abs(amount);
   await sb.from('transactions').update({name,amount:finalAmount,category,date:date||orig.date}).eq('id',id);
   closeModal('modal-edit-tx');await loadUserData();
@@ -1663,7 +1667,7 @@ function showMonthlySummary(){
       <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Saved</div><div style="font-size:18px;font-weight:800;color:${saved>0?'#7fff7f':'#ff8877'}">${fmt(saved)}</div></div>
       <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Rate</div><div style="font-size:18px;font-weight:800;color:${savingsRate>=20?'#7fff7f':'#fff'}">${savingsRate}%</div></div>
     </div>
-    ${topCat?`<div class="glass" style="padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">Top spending category</div><div style="font-size:15px;font-weight:700">${getCatIcon(topCat[0])} ${topCat[0]} — ${fmt(topCat[1])}</div></div>`:''}
+    ${topCat?`<div class="glass" style="padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">Top spending category</div><div style="font-size:15px;font-weight:700">${getCatIcon(topCat[0])} ${esc(topCat[0])} — ${fmt(topCat[1])}</div></div>`:''}
     <div class="glass" style="padding:12px;margin-bottom:10px">
       <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:6px">Thrive AI says</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6">${savingsRate>=30?'Outstanding month! A '+savingsRate+'% savings rate is exceptional.':savingsRate>=15?'Good progress! A '+savingsRate+'% savings rate shows strong discipline.':'This month was tough. Small changes add up — try setting a budget for your top spending category.'}</div>
