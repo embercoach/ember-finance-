@@ -786,6 +786,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   </div>
 </div>
 
+<div id="tut-advisor-banner" class="glass-strong" onclick="tutorialNext()" style="display:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:302;max-width:300px;padding:13px 18px;border-radius:16px;cursor:pointer;text-align:center">
+  <div style="font-family:'Lora',serif;font-size:13px;color:#fff;line-height:1.5">✨ Try asking Thrive AI something below, then tap here to continue →</div>
+</div>
+
 <script>
 const SUPA_URL='https://jjftkkpzyzojtxulpfcj.supabase.co';
 const SUPA_KEY='sb_publishable_kvnkjsYOSzUm0lz3JleMGQ_1elWXUZM';
@@ -1691,7 +1695,7 @@ const TUT_STEPS=[
   {type:'info',tab:'spend',title:'Categories & Search 🔍',body:"Below your budgets, every category you spend in shows up as its own card with a progress bar. Use the search bar to instantly find any past transaction by name or category."},
   {type:'target',tab:'goals',targetSelector:'#tut-target-goal',expectedModalId:'modal-add-goal',title:'Set a Goal 🎯',body:"Tap the glowing button to create your first savings goal."},
   {type:'info',tab:'advisor',title:'Or Just Tell It Your Numbers 💬',body:"Here's a shortcut: you can just <b>type your numbers straight into the chat</b> — like \"I earn R10,000 a month, spend R2,000 on food, and want to save R15,000 for an emergency fund.\" Thrive AI will read it, show you exactly what it wants to add, and let you fix anything before confirming. It even works for setting up recurring payments — just ask it to make something recurring."},
-  {type:'info',tab:'advisor',title:'Ask Thrive AI ✨',body:"Try tapping one of the quick questions below, or type your own. Take your time reading the reply — there's no rush. When you're ready, tap Next to continue the tour."},
+  {type:'banner',tab:'advisor'},
   {type:'target',tab:'profile',targetSelector:'#tut-target-income',expectedModalId:null,title:'Set Your Monthly Income 💰',body:"Tap the glowing row to set your income here directly. This is what powers your savings rate and forecasts app-wide."},
   {type:'target',tab:'profile',targetSelector:'#tut-target-currency',expectedModalId:'modal-currency',title:'Choose Your Currency 💱',body:"Tap the glowing row to switch currencies — every amount across the whole app updates instantly."},
   {type:'target',tab:'profile',targetSelector:'#tut-target-summary',expectedModalId:'modal-monthly-summary',title:'Monthly Summary 📊',body:"Tap the glowing row for a full report card of your month — income, spending, savings rate, and Thrive AI's take on how it went."},
@@ -1714,6 +1718,8 @@ function clearSpotlight(){
   if(tutCurrentTarget){tutCurrentTarget.classList.remove('tut-glow');tutCurrentTarget=null;}
   document.getElementById('tut-spotlight').style.display='none';
   document.removeEventListener('click',tutOutsideClickHandler,true);
+  const banner=document.getElementById('tut-advisor-banner');
+  if(banner)banner.style.display='none';
 }
 function tutOutsideClickHandler(e){
   // If the tutorial spotlight is active and the user clicks anything other than the
@@ -1743,6 +1749,10 @@ function renderTutorialStep(){
     nextBtn.onclick=tutorialNext;
     document.getElementById('tut-skip-step').style.display='none';
     openModal('modal-tutorial');
+  } else if(step.type==='banner'){
+    // Non-blocking: unlike the modal or floating spotlight, this never covers the
+    // real feature underneath, so the person can actually use it while it's showing.
+    document.getElementById('tut-advisor-banner').style.display='block';
   } else {
     closeModal('modal-tutorial');
     setTimeout(()=>spotlightTarget(step),120);
