@@ -725,7 +725,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ Manual spending entry</div>
             <div class="plan-feature">✓ Basic dashboard</div>
             <div class="plan-feature">✓ 3 AI questions per month</div>
-            <div class="plan-feature">✓ One savings goal</div>
+            <div class="plan-feature">✓ Up to 2 savings goals</div>
+            <div class="plan-feature">✓ Up to 2 recurring payments</div>
+            <div class="plan-feature">✓ Up to 2 budget categories</div>
           </div>
         </div>
         <div class="plan-card" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(24px);border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:18px;margin-bottom:10px">
@@ -737,11 +739,13 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           <div class="plan-features">
             <div class="plan-feature">✓ Bank connection — auto sync (launching soon)</div>
             <div class="plan-feature">✓ Unlimited AI conversations</div>
-            <div class="plan-feature">✓ Auto transaction categorisation</div>
             <div class="plan-feature">✓ Unlimited savings goals</div>
-            <div class="plan-feature">✓ Weekly briefing from Thrive AI</div>
-            <div class="plan-feature">✓ Subscription audit</div>
+            <div class="plan-feature">✓ Unlimited recurring payments</div>
+            <div class="plan-feature">✓ Unlimited budget categories</div>
             <div class="plan-feature">✓ Budget overspend alerts</div>
+            <div class="plan-feature">✓ Auto transaction categorisation (launching soon)</div>
+            <div class="plan-feature">✓ Weekly briefing from Thrive AI (launching soon)</div>
+            <div class="plan-feature">✓ Subscription audit (launching soon)</div>
           </div>
           <button class="plan-btn" id="pro-plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
         </div>
@@ -1307,6 +1311,11 @@ function checkUpcomingBills(){
 }
 
 function checkBudgetAlerts(){
+  const el=document.getElementById('budget-alerts');
+  if(!el)return;
+  // Budget overspend alerts are a Pro perk — free users can still set budgets
+  // and see their progress bars, but the proactive over-budget banner is Pro-only.
+  if(!isPro){el.innerHTML='';return;}
   const now=new Date();
   const alerts=[];
   const byCat={};
@@ -1472,6 +1481,12 @@ async function addRecurring(){
   const frequency=document.getElementById('rec-frequency').value;
   const startDate=document.getElementById('rec-date').value||new Date().toISOString().split('T')[0];
   if(!name||!amount){alert('Please fill in name and amount.');return;}
+  if(!isPro && userRecurring.length>=2){
+    alert("Free accounts can have up to 2 recurring items. Upgrade to Pro for unlimited recurring payments.");
+    closeModal('modal-add-recurring');
+    switchTab('plans');
+    return;
+  }
   const finalAmount=type==='expense'?-Math.abs(amount):Math.abs(amount);
   const {error}=await sb.from('recurring').insert({user_id:currentUser.id,name,amount:finalAmount,category,currency:userCurrency,frequency,next_date:startDate,active:true});
   if(error){alert('Error: '+error.message);return;}
@@ -1583,11 +1598,11 @@ async function addGoal(){
   const current=Math.abs(parseFloat(document.getElementById('goal-current').value))||0;
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target){alert('Please fill in goal name and target amount.');return;}
-  // The Free plan is advertised as "One savings goal" — this was never actually
-  // enforced anywhere in the code until now, matching the same pattern already
-  // used for the AI question limit.
-  if(!isPro && userGoals.length>=1){
-    alert("Free accounts can have one active goal at a time. Upgrade to Pro for unlimited goals.");
+  // The Free plan allows 2 active goals — enough to actually use the feature,
+  // but a real financial life (e.g. emergency fund + a big purchase) hits the
+  // wall quickly, matching the same pattern used for the AI question limit.
+  if(!isPro && userGoals.length>=2){
+    alert("Free accounts can have up to 2 active goals. Upgrade to Pro for unlimited goals.");
     closeModal('modal-add-goal');
     switchTab('plans');
     return;
@@ -1622,6 +1637,14 @@ async function saveBudget(){
   // If a budget already exists for this category under different casing (e.g. "food" vs "Food"),
   // update that existing row instead of silently creating a confusing duplicate.
   const existingKey=Object.keys(userBudgets).find(k=>normCat(k)===normCat(typedCategory));
+  // Only block on the free-tier cap if this would actually create a NEW category —
+  // editing an existing budget's amount should always be allowed.
+  if(!isPro && !existingKey && Object.keys(userBudgets).length>=2){
+    alert("Free accounts can have up to 2 budget categories. Upgrade to Pro for unlimited budgets.");
+    closeModal('modal-add-budget');
+    switchTab('plans');
+    return;
+  }
   const category=existingKey||typedCategory;
   await sb.from('budgets').upsert({user_id:currentUser.id,category,amount},{onConflict:'user_id,category'});
   document.getElementById('budget-category').value='';document.getElementById('budget-amount').value='';
@@ -2179,15 +2202,19 @@ async function confirmIntake(cardId){
         const amt=a.kind==='expense'?-Math.abs(parseFloat(a.amount)):Math.abs(parseFloat(a.amount));
         await sb.from('transactions').insert({user_id:currentUser.id,name:a.name,amount:amt,category:a.category||'Other',date:new Date().toISOString().split('T')[0],currency:userCurrency});
       } else if(a.type==='goal'){
+        // Same free-tier cap as the manual "Add Goal" form — otherwise chat becomes a bypass.
+        if(!isPro && userGoals.length>=2){skipped++;continue;}
         await sb.from('goals').insert({user_id:currentUser.id,name:a.name,target:parseFloat(a.target),current:parseFloat(a.current)||0});
       } else if(a.type==='recurring'){
+        // Same free-tier cap as the manual "Add Recurring" form.
+        if(!isPro && userRecurring.length>=2){skipped++;continue;}
         const amt=a.kind==='expense'?-Math.abs(parseFloat(a.amount)):Math.abs(parseFloat(a.amount));
         await sb.from('recurring').insert({user_id:currentUser.id,name:a.name,amount:amt,category:a.category||'Other',currency:userCurrency,frequency:a.frequency==='weekly'?'weekly':'monthly',next_date:new Date().toISOString().split('T')[0],active:true});
       }
     }catch(e){console.error('Intake insert failed',e);}
   }
   delete intakeStore[cardId];
-  const skipNote=skipped>0?` (skipped ${skipped} item${skipped>1?'s':''} with no amount entered)`:'';
+  const skipNote=skipped>0?` (skipped ${skipped} item${skipped>1?'s':''} — check amounts entered or your plan's limits)`:'';
   card.innerHTML=`<div class="msg-avatar">🌿</div><div class="glass" style="padding:12px 15px;max-width:82%;border-radius:4px 16px 16px 16px"><div style="font-size:12px;color:#7fff7f;font-weight:700">✓ Added to your account${skipNote}</div></div>`;
   await loadUserData();
 }
