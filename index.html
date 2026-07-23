@@ -1727,6 +1727,12 @@ function tutOutsideClickHandler(e){
 function renderTutorialStep(){
   const step=TUT_STEPS[tutStep];
   clearSpotlight();
+  // Defensive cleanup: a step transition can be triggered by an app action that
+  // itself opens a new modal (e.g. tapping "+ Add Recurring" closes the Recurring
+  // list modal and opens the Add Recurring form in the same click). Without this,
+  // the next tutorial step would render its spotlight on top of that leftover
+  // open modal instead of the actual page underneath.
+  document.querySelectorAll('.modal-overlay.active').forEach(o=>o.classList.remove('active'));
   switchTab(step.tab);
   if(step.type==='info'){
     document.getElementById('tut-content').innerHTML=`<div style="text-align:center;margin-bottom:6px"><div style="font-family:'Lora',serif;font-size:19px;color:#fff;margin-bottom:10px">${step.title}</div><div style="font-size:13px;color:rgba(255,255,255,0.78);line-height:1.7">${step.body}</div></div>`;
