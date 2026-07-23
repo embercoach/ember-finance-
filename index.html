@@ -392,7 +392,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <label class="form-label">Email Address</label>
       <input class="form-input" id="signup-email" type="email" placeholder="you@example.com">
       <label class="form-label">Password</label>
-      <input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters">
+      <div style="position:relative">
+        <input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters" style="padding-right:44px">
+        <span onclick="togglePasswordVisibility('signup-password',this)" style="position:absolute;right:14px;top:13px;cursor:pointer;font-size:16px;user-select:none">👁️</span>
+      </div>
       <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create My Account 🌱</button>
       <div class="form-divider">Already have an account? <span class="form-link" onclick="show('s-login')">Sign in</span></div>
       <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
@@ -411,7 +414,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <label class="form-label">Email Address</label>
       <input class="form-input" id="login-email" type="email" placeholder="you@example.com">
       <label class="form-label">Password</label>
-      <input class="form-input" id="login-password" type="password" placeholder="Your password">
+      <div style="position:relative">
+        <input class="form-input" id="login-password" type="password" placeholder="Your password" style="padding-right:44px">
+        <span onclick="togglePasswordVisibility('login-password',this)" style="position:absolute;right:14px;top:13px;cursor:pointer;font-size:16px;user-select:none">👁️</span>
+      </div>
       <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In 🌿</button>
       <div style="text-align:center;margin:2px 0 6px"><span class="form-link" style="font-size:12px;font-weight:600" onclick="forgotPassword()">Forgot password?</span></div>
       <div class="form-divider">No account? <span class="form-link" onclick="show('s-signup')">Sign up free</span></div>
@@ -679,6 +685,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div><div class="profile-label">💎 Upgrade to Pro</div><div class="profile-sub">Unlock all features — $12/month</div></div>
             <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
           </div>
+          <div class="profile-item" id="profile-manage-plan-row" style="display:none" onclick="switchTab('plans')">
+            <div><div class="profile-label">💎 Manage Plan</div><div class="profile-sub">View your subscription details</div></div>
+            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+          </div>
           <div class="profile-item" id="profile-manage-sub-row" style="display:none" onclick="cancelSubscription()">
             <div><div class="profile-label" style="color:#ff8877">✕ Cancel Subscription</div><div class="profile-sub">You'll keep Pro until your billing period ends</div></div>
             <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
@@ -742,7 +752,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           </div>
           <div class="plan-price">$99<span>/year</span></div>
           <div style="font-size:12px;color:rgba(255,255,255,0.58);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
-          <button class="plan-btn btn-outline" onclick="openPaddleCheckout(PADDLE_PRICE_ANNUAL)">Get Annual Plan</button>
+          <button class="plan-btn btn-outline" id="annual-plan-btn" onclick="openPaddleCheckout(PADDLE_PRICE_ANNUAL)">Get Annual Plan</button>
         </div>
         <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Thrive AI is not a licensed financial adviser</div>
@@ -862,10 +872,30 @@ function updatePlansUI(){
       btn.onclick=function(){openPaddleCheckout(PADDLE_PRICE_MONTHLY);};
     }
   }
+  const annualBtn=document.getElementById('annual-plan-btn');
+  if(annualBtn){
+    if(isPro){
+      // Prevent starting a second, redundant subscription — we don't currently
+      // support plan-switching, only cancel-and-restart via Plans/Profile.
+      annualBtn.textContent='Already Subscribed ✓';
+      annualBtn.disabled=true;
+      annualBtn.style.opacity='0.5';
+      annualBtn.style.cursor='default';
+      annualBtn.onclick=null;
+    } else {
+      annualBtn.textContent='Get Annual Plan';
+      annualBtn.disabled=false;
+      annualBtn.style.opacity='1';
+      annualBtn.style.cursor='pointer';
+      annualBtn.onclick=function(){openPaddleCheckout(PADDLE_PRICE_ANNUAL);};
+    }
+  }
   const upgradeRow=document.getElementById('profile-upgrade-row');
   const manageRow=document.getElementById('profile-manage-sub-row');
+  const managePlanRow=document.getElementById('profile-manage-plan-row');
   if(upgradeRow)upgradeRow.style.display=isPro?'none':'';
   if(manageRow)manageRow.style.display=isPro?'':'none';
+  if(managePlanRow)managePlanRow.style.display=isPro?'':'none';
 }
 let userRecurring=[];
 let chatHistory=[];
@@ -929,6 +959,11 @@ function closeModal(id){
   }
 }
 function setGreeting(name){const h=new Date().getHours();const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';const displayName=name||currentUser?.email?.split('@')[0]||'';document.getElementById('greeting').textContent=`${g}${displayName?', '+displayName:''}! 👋`}
+function togglePasswordVisibility(id,el){
+  const inp=document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';el.textContent='🙈';}
+  else{inp.type='password';el.textContent='👁️';}
+}
 
 // AUTH
 async function doSignup(){
@@ -1548,6 +1583,15 @@ async function addGoal(){
   const current=Math.abs(parseFloat(document.getElementById('goal-current').value))||0;
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target){alert('Please fill in goal name and target amount.');return;}
+  // The Free plan is advertised as "One savings goal" — this was never actually
+  // enforced anywhere in the code until now, matching the same pattern already
+  // used for the AI question limit.
+  if(!isPro && userGoals.length>=1){
+    alert("Free accounts can have one active goal at a time. Upgrade to Pro for unlimited goals.");
+    closeModal('modal-add-goal');
+    switchTab('plans');
+    return;
+  }
   await sb.from('goals').insert({user_id:currentUser.id,name,target,current,deadline:deadline||null});
   document.getElementById('goal-name').value='';document.getElementById('goal-target').value='';document.getElementById('goal-current').value='';document.getElementById('goal-deadline').value='';
   closeModal('modal-add-goal');await loadUserData();
@@ -1630,9 +1674,11 @@ async function editIncome(){
   updateProfile();updateDashboard();
 }
 async function clearAllData(){
-  if(!confirm('Delete ALL your transactions and goals? This cannot be undone.'))return;
+  if(!confirm('Delete ALL your transactions, goals, recurring items, and budgets? This cannot be undone.'))return;
   await sb.from('transactions').delete().eq('user_id',currentUser.id);
   await sb.from('goals').delete().eq('user_id',currentUser.id);
+  await sb.from('recurring').delete().eq('user_id',currentUser.id);
+  await sb.from('budgets').delete().eq('user_id',currentUser.id);
   await loadUserData();
   alert('All data cleared.');
 }
