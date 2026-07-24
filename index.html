@@ -1283,7 +1283,12 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   const byCat={};
   const now=new Date();
   userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${esc(cat)} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${esc(cat)} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${esc(cat)} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${esc(cat)} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+  // Over-budget / near-budget insight cards are part of the same "budget overspend
+  // alerts" Pro perk as the banner on Home — without this check, free users were
+  // still getting the exact same proactive warning through this second surface.
+  if(isPro){
+    Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${esc(cat)} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${esc(cat)} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${esc(cat)} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${esc(cat)} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+  }
   if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
   if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
@@ -2194,6 +2199,8 @@ async function confirmIntake(cardId){
     if(a.type==='goal')a.target=editedAmount;else a.amount=editedAmount;
     selected.push(a);
   });
+  let goalsAddedThisBatch=0;
+  let recurringAddedThisBatch=0;
   for(const a of selected){
     try{
       if(a.type==='monthly_income'){
@@ -2202,14 +2209,17 @@ async function confirmIntake(cardId){
         const amt=a.kind==='expense'?-Math.abs(parseFloat(a.amount)):Math.abs(parseFloat(a.amount));
         await sb.from('transactions').insert({user_id:currentUser.id,name:a.name,amount:amt,category:a.category||'Other',date:new Date().toISOString().split('T')[0],currency:userCurrency});
       } else if(a.type==='goal'){
-        // Same free-tier cap as the manual "Add Goal" form — otherwise chat becomes a bypass.
-        if(!isPro && userGoals.length>=2){skipped++;continue;}
+        // Track additions made so far THIS batch, not just the stale array length from
+        // before the loop started — otherwise several goals detected in one AI message
+        // could all slip through the free-tier cap together.
+        if(!isPro && (userGoals.length+goalsAddedThisBatch)>=2){skipped++;continue;}
         await sb.from('goals').insert({user_id:currentUser.id,name:a.name,target:parseFloat(a.target),current:parseFloat(a.current)||0});
+        goalsAddedThisBatch++;
       } else if(a.type==='recurring'){
-        // Same free-tier cap as the manual "Add Recurring" form.
-        if(!isPro && userRecurring.length>=2){skipped++;continue;}
+        if(!isPro && (userRecurring.length+recurringAddedThisBatch)>=2){skipped++;continue;}
         const amt=a.kind==='expense'?-Math.abs(parseFloat(a.amount)):Math.abs(parseFloat(a.amount));
         await sb.from('recurring').insert({user_id:currentUser.id,name:a.name,amount:amt,category:a.category||'Other',currency:userCurrency,frequency:a.frequency==='weekly'?'weekly':'monthly',next_date:new Date().toISOString().split('T')[0],active:true});
+        recurringAddedThisBatch++;
       }
     }catch(e){console.error('Intake insert failed',e);}
   }
