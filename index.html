@@ -553,12 +553,14 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         </div>
         <div style="margin-bottom:12px">
           <button class="btn-outline" id="tut-target-recurring" style="width:100%;padding:10px;font-size:12px;margin:0" onclick="renderRecurring();openModal('modal-recurring')">🔁 Recurring Payments</button>
+          <div id="recurring-limit-indicator" style="display:none;font-size:10px;color:rgba(255,255,255,0.45);text-align:center;margin-top:6px"></div>
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="section-label" style="margin:0">By Category</div>
           <button class="btn-small btn-blue" style="cursor:pointer" onclick="openModal('modal-add-budget')">⚙ Set Budgets</button>
         </div>
+        <div id="budget-limit-indicator" style="display:none;font-size:10px;color:rgba(255,255,255,0.45);margin:-4px 0 10px"></div>
         <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div></div>
 
         <div class="section-label" style="margin-top:12px">All Transactions</div>
@@ -580,6 +582,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
           </div>
           <button class="btn-small btn-green" id="tut-target-goal" onclick="openModal('modal-add-goal')">+ Goal</button>
         </div>
+        <div id="goals-limit-indicator" style="display:none;font-size:11px;color:rgba(255,255,255,0.5);margin:-10px 0 12px"></div>
         <div id="goals-list">
           <div class="glass" style="padding:18px;text-align:center">
             <div style="font-size:30px;margin-bottom:8px">🎯</div>
@@ -1096,7 +1099,7 @@ async function loadUserData(){
     aiQuestionsMonth=profile.ai_questions_month||null;
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   }
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();updatePlansUI();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();updatePlansUI();updateLimitIndicators();
 }
 
 // DASHBOARD
@@ -1502,6 +1505,36 @@ async function addRecurring(){
   document.getElementById('rec-name').value='';document.getElementById('rec-amount').value='';document.getElementById('rec-category').value='';document.getElementById('rec-date').value='';
   closeModal('modal-add-recurring');await loadUserData();
 }
+function updateLimitIndicators(){
+  const goalsInd=document.getElementById('goals-limit-indicator');
+  if(goalsInd){
+    if(!isPro){
+      goalsInd.style.display='block';
+      goalsInd.textContent=`${userGoals.length} of 2 free goals used`+(userGoals.length>=2?' — upgrade for unlimited 💎':'');
+    } else {
+      goalsInd.style.display='none';
+    }
+  }
+  const recInd=document.getElementById('recurring-limit-indicator');
+  if(recInd){
+    if(!isPro){
+      recInd.style.display='block';
+      recInd.textContent=`${userRecurring.length} of 2 free recurring items used`+(userRecurring.length>=2?' — upgrade for unlimited 💎':'');
+    } else {
+      recInd.style.display='none';
+    }
+  }
+  const budInd=document.getElementById('budget-limit-indicator');
+  if(budInd){
+    if(!isPro){
+      const count=Object.keys(userBudgets).length;
+      budInd.style.display='block';
+      budInd.textContent=`${count} of 2 free budget categories used`+(count>=2?' — upgrade for unlimited 💎':'');
+    } else {
+      budInd.style.display='none';
+    }
+  }
+}
 function renderRecurring(){
   const box=document.getElementById('recurring-list');
   if(!box)return;
@@ -1509,6 +1542,7 @@ function renderRecurring(){
   if(!userRecurring.length){
     box.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';
     if(clearBtn)clearBtn.style.display='none';
+    updateLimitIndicators();
     return;
   }
   if(clearBtn)clearBtn.style.display='block';
@@ -1524,6 +1558,7 @@ function renderRecurring(){
       </div>
     </div>`;
   }).join('');
+  updateLimitIndicators();
 }
 async function deleteRecurring(id){
   if(!confirm('Stop this recurring item? Transactions already created will stay.'))return;
