@@ -814,12 +814,22 @@ const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
 
-// Paddle checkout — sandbox mode for now. Swap PADDLE_TOKEN to a live token
-// (and remove the Environment.set line) when going live.
-const PADDLE_TOKEN='test_8dcc53e2b9a23fed5f43862a6c3';
-const PADDLE_PRICE_MONTHLY='pri_01ky4bwbq5g89sp1nkf3g94dsy';
-const PADDLE_PRICE_ANNUAL='pri_01ky4c31z2edqs2hjw9k4bmdx0';
-Paddle.Environment.set('sandbox');
+// Paddle checkout — one switch controls sandbox vs live.
+// TO GO LIVE: set PADDLE_LIVE_MODE to true, then fill in the four 'live_...' /
+// 'pri_...' placeholders below with the real values from your LIVE Paddle
+// dashboard (Developer Tools → Authentication for the token, and your live
+// Thrive AI Pro product's price IDs). Nothing else in this file needs to change.
+const PADDLE_LIVE_MODE = false;
+const PADDLE_TOKEN = PADDLE_LIVE_MODE
+  ? 'REPLACE_WITH_LIVE_CLIENT_SIDE_TOKEN'
+  : 'test_8dcc53e2b9a23fed5f43862a6c3';
+const PADDLE_PRICE_MONTHLY = PADDLE_LIVE_MODE
+  ? 'REPLACE_WITH_LIVE_MONTHLY_PRICE_ID'
+  : 'pri_01ky4bwbq5g89sp1nkf3g94dsy';
+const PADDLE_PRICE_ANNUAL = PADDLE_LIVE_MODE
+  ? 'REPLACE_WITH_LIVE_ANNUAL_PRICE_ID'
+  : 'pri_01ky4c31z2edqs2hjw9k4bmdx0';
+if(!PADDLE_LIVE_MODE) Paddle.Environment.set('sandbox');
 Paddle.Initialize({
   token:PADDLE_TOKEN,
   eventCallback:function(data){
