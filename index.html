@@ -826,6 +826,10 @@ Paddle.Initialize({
     if(data.name==='checkout.completed'){
       alert('Payment successful! Your account will be upgraded to Pro shortly. 🌱');
       switchTab('home');
+      // The webhook typically takes a few seconds to process. Without this,
+      // isPro stays stale client-side and Pro-only actions (like adding a
+      // 3rd goal) would still be blocked right after a successful purchase.
+      setTimeout(()=>{ if(currentUser) loadUserData(); },3000);
     }
   }
 });
