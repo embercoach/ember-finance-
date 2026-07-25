@@ -4,192 +4,285 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thrive AI — Personal Finance Coach</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <style>
+/* ============================================================
+   DESIGN TOKENS — single source of truth. Every screen should
+   pull from here rather than hardcoding a value. Colors carry
+   meaning: brand (bronze) is for accents & interactive states,
+   never for good/bad signaling — that's what positive/negative
+   are for. This block is written to survive a future dark-mode
+   pass without a redesign: solid tones, not opacity stacking.
+   ============================================================ */
+:root{
+  --color-canvas:#FAF8F4;
+  --color-surface:#FFFFFF;
+  --color-surface-sunken:#F3F1EA;
+  --color-overlay:rgba(20,18,14,0.55);
+
+  --color-ink:#1C1A16;
+  --color-ink-secondary:#6B675E;
+  --color-ink-muted:#9A968A;
+  --color-ink-on-dark:#FAF8F4;
+
+  --color-border:#EAE6DA;
+  --color-border-strong:#DAD5C6;
+
+  --color-brand:#9C7440;
+  --color-brand-strong:#7A5B32;
+  --color-brand-wash:rgba(156,116,64,0.12);
+  --color-brand-wash-strong:rgba(156,116,64,0.24);
+
+  --color-positive:#3F7550;
+  --color-positive-wash:rgba(63,117,80,0.12);
+  --color-negative:#A34032;
+  --color-negative-wash:rgba(163,64,50,0.1);
+  --color-warning:#8A6408;
+  --color-warning-wash:rgba(184,134,11,0.12);
+  --color-info:#2F6FE0;
+  --color-info-wash:rgba(47,111,224,0.1);
+
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-voice:'Lora',Georgia,serif;
+  --text-xs:11px;--text-sm:12.5px;--text-base:13.5px;--text-md:15px;
+  --text-lg:17px;--text-xl:20px;--text-2xl:26px;--text-3xl:34px;--text-hero:42px;
+
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;
+
+  --radius-sm:9px;--radius-md:14px;--radius-lg:20px;--radius-xl:26px;--radius-pill:999px;
+
+  --shadow-sm:0 2px 18px rgba(28,26,22,0.06);
+  --shadow-md:0 10px 34px rgba(28,26,22,0.12);
+
+  --ease-standard:cubic-bezier(.22,1,.36,1);
+  --dur-fast:0.2s;--dur-base:0.35s;--dur-slow:0.9s;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:0}
-body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{font-family:var(--font-sans);color:var(--color-ink);background:var(--color-canvas);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .screen{display:none}.screen.active{display:flex;flex-direction:column;min-height:100vh}
-.landing-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:url('https://i.ibb.co/xqnRy8N8/toomas-tartes-Yizrl9-N-e-DA-unsplash.jpg') center center/cover no-repeat}
-.landing-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.3) 50%,rgba(0,15,5,0.7) 100%)}
-.app-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;display:none;background:url('https://i.ibb.co/JWqnJs8F/dharmendra-sahu-Ia2-Kjtrx8y4-unsplash.jpg') center center/cover no-repeat}
-.app-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,15,10,0.55)}
-.glass{background:rgba(0,20,10,0.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.18);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
-.glass-strong{background:rgba(0,20,10,0.65);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.25);border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.4)}
-.btn-primary{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(220,255,220,0.95));color:#2d5a27;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 20px rgba(255,255,255,0.25);transition:all 0.2s}
+.landing-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;background:var(--color-canvas)}
+.landing-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 30% 15%,var(--color-brand-wash),transparent 55%)}
+.app-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;display:none;background:var(--color-canvas)}
+.app-bg::after{content:none}
+.glass{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.glass-strong{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
+.btn-primary{width:100%;padding:15px;border-radius:var(--radius-md);border:none;background:var(--color-ink);color:var(--color-canvas);font-size:var(--text-base);font-weight:600;font-family:var(--font-sans);cursor:pointer;margin-bottom:10px;transition:all var(--dur-fast)}
 .btn-primary:hover{transform:translateY(-2px)}
-.btn-outline{width:100%;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,0.5);background:rgba(255,255,255,0.1);color:#fff;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:10px;transition:all 0.2s}
-.btn-small{padding:7px 14px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s}
-.btn-green{background:rgba(127,255,127,0.2);color:#7fff7f;border:1px solid rgba(127,255,127,0.3)}
-.btn-red{background:rgba(255,100,100,0.2);color:#ff8877;border:1px solid rgba(255,100,100,0.3)}
-.btn-blue{background:rgba(100,180,255,0.2);color:#88ccff;border:1px solid rgba(100,180,255,0.3)}
-.form-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px}
-.form-input{width:100%;padding:13px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-size:14px;font-family:'Nunito',sans-serif;color:#fff;background:rgba(255,255,255,0.12);outline:none;margin-bottom:14px;transition:all 0.2s}
-.form-input::placeholder{color:rgba(255,255,255,0.38)}
-.form-input:focus{border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.2)}
-.form-select{width:100%;padding:13px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-size:14px;font-family:'Nunito',sans-serif;color:#fff;background:rgba(20,50,30,0.9);outline:none;margin-bottom:14px}
+.btn-outline{width:100%;padding:14px;border-radius:var(--radius-md);border:1.5px solid var(--color-border-strong);background:transparent;color:var(--color-ink);font-size:var(--text-base);font-weight:600;font-family:var(--font-sans);cursor:pointer;margin-bottom:10px;transition:all var(--dur-fast)}
+.btn-small{padding:7px 14px;border-radius:var(--radius-sm);border:none;font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;cursor:pointer;transition:all var(--dur-fast)}
+.btn-green{background:var(--color-brand-wash);color:var(--color-brand);border:1px solid var(--color-brand-wash-strong)}
+.btn-red{background:var(--color-negative-wash);color:var(--color-negative);border:1px solid rgba(163,64,50,0.28)}
+.btn-blue{background:var(--color-info-wash);color:var(--color-info);border:1px solid rgba(47,111,224,0.28)}
+.form-label{font-size:var(--text-xs);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-ink-secondary);display:block;margin-bottom:6px}
+.form-input{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--color-border-strong);font-size:var(--text-base);font-family:var(--font-sans);color:var(--color-ink);background:var(--color-surface);outline:none;margin-bottom:12px;transition:all var(--dur-fast)}
+.form-input::placeholder{color:var(--color-ink-muted)}
+.form-input:focus{border-color:var(--color-brand);background:var(--color-surface)}
+.form-select{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--color-border-strong);font-size:var(--text-base);font-family:var(--font-sans);color:var(--color-ink);background:var(--color-surface);outline:none;margin-bottom:12px}
 .landing{align-items:center;justify-content:flex-end;min-height:100vh}
 .landing-content{width:100%;padding:0 24px 50px;display:flex;flex-direction:column;align-items:center}
 .landing-card{width:100%;max-width:400px;padding:34px 26px;animation:slideUp 0.9s cubic-bezier(.22,1,.36,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-.app-title{font-family:'Lora',serif;font-size:50px;font-weight:400;font-style:italic;color:#fff;text-align:center;margin-bottom:4px;text-shadow:0 2px 30px rgba(0,0,0,0.5)}
-.app-tagline{font-size:14px;color:rgba(255,255,255,0.85);text-align:center;margin-bottom:26px;font-weight:500}
+.app-title{font-family:var(--font-sans);font-size:38px;font-weight:700;letter-spacing:-0.02em;color:var(--color-ink);text-align:center;margin-bottom:4px}
+.app-tagline{font-size:var(--text-base);color:var(--color-ink-secondary);text-align:center;margin-bottom:26px;font-weight:500}
 .feature-list{margin-bottom:22px;display:flex;flex-direction:column;gap:8px}
-.feature-item{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.9);font-weight:500}
-.feature-dot{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:var(--text-base);color:var(--color-ink);font-weight:500}
+.feature-dot{width:20px;height:20px;border-radius:50%;background:var(--color-brand-wash-strong);border:1px solid var(--color-brand);color:var(--color-brand);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
 .auth-page{align-items:center;justify-content:center;padding:40px 24px;min-height:100vh}
 .auth-card{width:100%;max-width:380px;padding:34px 26px;animation:slideUp 0.5s ease}
-.auth-logo{font-family:'Lora',serif;font-size:28px;font-style:italic;color:#fff;text-align:center;margin-bottom:4px}
-.auth-sub{font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:24px;font-weight:500}
-.back-btn{background:none;border:none;color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:5px}
-.form-link{color:#fff;cursor:pointer;font-weight:700;text-decoration:underline;font-size:13px}
-.form-divider{text-align:center;color:rgba(255,255,255,0.55);font-size:13px;margin:10px 0}
-.error-msg{background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#ff8877;margin-bottom:12px;display:none}
-.success-msg{background:rgba(127,255,127,0.2);border:1px solid rgba(127,255,127,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#7fff7f;margin-bottom:12px;display:none}
+.auth-logo{font-family:var(--font-sans);font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--color-ink);text-align:center;margin-bottom:4px}
+.auth-sub{font-size:var(--text-base);color:var(--color-ink-secondary);text-align:center;margin-bottom:24px;font-weight:500}
+.back-btn{background:none;border:none;color:var(--color-ink-secondary);font-size:var(--text-base);cursor:pointer;font-family:var(--font-sans);font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:5px}
+.form-link{color:var(--color-brand);cursor:pointer;font-weight:600;text-decoration:underline;font-size:var(--text-base)}
+.form-divider{text-align:center;color:var(--color-ink-secondary);font-size:var(--text-base);margin:10px 0}
+.error-msg{background:var(--color-negative-wash);border:1px solid rgba(163,64,50,0.28);border-radius:var(--radius-sm);padding:10px 14px;font-size:var(--text-base);color:var(--color-negative);margin-bottom:12px;display:none}
+.success-msg{background:var(--color-positive-wash);border:1px solid rgba(63,117,80,0.3);border-radius:var(--radius-sm);padding:10px 14px;font-size:var(--text-base);color:var(--color-positive);margin-bottom:12px;display:none}
 
 /* ONBOARDING */
 .onboard-step{display:none}.onboard-step.active{display:block}
 .onboard-progress{display:flex;gap:6px;margin-bottom:24px;justify-content:center}
-.onboard-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all 0.3s}
-.onboard-dot.active{background:#fff;width:24px;border-radius:4px}
-.tut-glow{position:relative !important;z-index:301 !important;box-shadow:0 0 0 4px rgba(127,255,127,0.5),0 0 0 9999px rgba(0,0,0,0.62) !important;border-radius:14px;animation:tutPulse 1.5s ease-in-out infinite}
-@keyframes tutPulse{0%,100%{box-shadow:0 0 0 4px rgba(127,255,127,0.4),0 0 0 9999px rgba(0,0,0,0.62)}50%{box-shadow:0 0 0 9px rgba(127,255,127,0.7),0 0 0 9999px rgba(0,0,0,0.62)}}
+.onboard-dot{width:8px;height:8px;border-radius:50%;background:rgba(28,26,22,0.16);transition:all 0.3s}
+.onboard-dot.active{background:#9C7440;width:24px;border-radius:4px}
+.tut-glow{position:relative !important;z-index:301 !important;box-shadow:0 0 0 4px rgba(156,116,64,0.5),0 0 0 9999px rgba(15,20,25,0.55) !important;border-radius:14px;animation:tutPulse 1.5s ease-in-out infinite}
+@keyframes tutPulse{0%,100%{box-shadow:0 0 0 4px rgba(156,116,64,0.4),0 0 0 9999px rgba(15,20,25,0.55)}50%{box-shadow:0 0 0 9px rgba(156,116,64,0.7),0 0 0 9999px rgba(15,20,25,0.55)}}
 #tut-spotlight{position:fixed;z-index:302;max-width:260px;padding:15px;border-radius:16px;display:none}
 
 .app-shell{flex:1;display:flex;flex-direction:column;max-width:430px;margin:0 auto;width:100%}
 .top-bar{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center}
-.top-bar-name{font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,0.2)}
+.top-bar-name{font-family:var(--font-sans);font-size:var(--text-xl);font-weight:700;letter-spacing:-0.01em;color:var(--color-ink)}
 .tab-content{flex:1;overflow-y:auto;padding-bottom:90px;scrollbar-width:none}
 .tab-content::-webkit-scrollbar{display:none}
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,25,15,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.1);display:flex;padding:8px 0 20px;z-index:100}
-.nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:8px 0 0;transition:all 0.2s}
-.nav-btn.active{color:#fff}
-.nav-btn.active .nav-icon{transform:scale(1.15);filter:drop-shadow(0 0 6px rgba(255,255,255,0.4))}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.94);backdrop-filter:blur(20px);border-top:1px solid var(--color-border);display:flex;padding:8px 0 20px;z-index:100}
+.nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;letter-spacing:0.02em;color:var(--color-ink-muted);padding:8px 0 0;transition:all var(--dur-fast)}
+.nav-btn.active{color:var(--color-brand)}
+.nav-btn.active .nav-icon{transform:scale(1.1)}
 .nav-icon{font-size:20px;line-height:1;transition:all 0.2s}
 .page-pad{padding:12px 18px 0}
-.section-label{font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:10px}
-.hero-card{padding:20px;margin-bottom:10px;position:relative;overflow:hidden}
-.hero-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06)}
-.hero-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px}
-.hero-amount{font-family:'Lora',serif;font-size:42px;font-weight:400;color:#fff;letter-spacing:-0.02em;line-height:1.1;margin-bottom:10px}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:11px;color:#fff;font-weight:600;border:1px solid rgba(255,255,255,0.22)}
+.section-label{font-size:var(--text-xs);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-ink-secondary);margin-bottom:10px}
+.hero-card{padding:20px;margin-bottom:10px;position:relative;overflow:hidden;background:#FFFFFF;border:1px solid rgba(28,26,22,0.08);box-shadow:0 2px 18px rgba(28,26,22,0.06)}
+.hero-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(156,116,64,0.16)}
+.hero-label{font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(28,26,22,0.7);margin-bottom:4px}
+.hero-amount{font-family:'Nunito',sans-serif;font-size:42px;font-weight:800;color:#1C1A16;letter-spacing:-0.02em;line-height:1.05;margin-bottom:10px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(28,26,22,0.14);padding:4px 12px;border-radius:20px;font-size:11px;color:#1C1A16;font-weight:600;border:1px solid rgba(28,26,22,0.2)}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
 .stat-card{padding:13px}
 .stat-tappable{cursor:pointer;transition:transform 0.15s,background 0.15s}
 .stat-tappable:hover{transform:translateY(-2px)}
 .stat-tappable:active{transform:scale(0.98)}
-.stat-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:3px}
-.stat-value{font-size:19px;font-weight:800;color:#fff}
-.stat-sub{font-size:10px;color:rgba(255,255,255,0.42);margin-top:1px}
+.stat-label{font-size:9px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(28,26,22,0.6);margin-bottom:3px}
+.stat-value{font-size:21px;font-weight:800;color:#1C1A16;letter-spacing:-0.01em}
+.stat-sub{font-size:10px;color:rgba(28,26,22,0.4);margin-top:1px}
 .insight-card{padding:13px 15px;margin-bottom:8px;cursor:pointer;border-left:3px solid;transition:all 0.2s}
 .insight-card:hover{transform:translateX(3px)}
-.insight-title{font-size:12px;font-weight:800;margin-bottom:4px;color:#fff}
-.insight-body{font-size:12px;color:rgba(255,255,255,0.72);line-height:1.6}
-.insight-cta{font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px;color:rgba(255,255,255,0.82)}
+.insight-title{font-size:12px;font-weight:800;margin-bottom:4px;color:#1C1A16}
+.insight-body{font-size:12px;color:rgba(28,26,22,0.68);line-height:1.6}
+.insight-cta{font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px;color:#9C7440}
 .tx-card{overflow:hidden;margin-bottom:10px}
-.tx-row{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid rgba(255,255,255,0.07);transition:background 0.15s}
+.tx-row{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid var(--color-border);transition:background var(--dur-fast)}
 .tx-row:last-child{border-bottom:none}
-.tx-row:hover{background:rgba(255,255,255,0.04)}
-.tx-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.tx-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:1px}
-.tx-date{font-size:10px;color:rgba(255,255,255,0.45)}
-.tx-amount{font-size:13px;font-weight:800;color:#fff;margin-left:auto;flex-shrink:0}
-.progress-track{height:6px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden}
+.tx-row:hover{background:var(--color-surface-sunken)}
+.tx-icon{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--color-surface);border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.tx-name{font-size:var(--text-base);font-weight:600;color:var(--color-ink);margin-bottom:1px}
+.tx-date{font-size:var(--text-xs);color:var(--color-ink-muted)}
+.tx-amount{font-size:var(--text-md);font-weight:700;color:var(--color-ink);margin-left:auto;flex-shrink:0}
+.progress-track{height:6px;background:#EEEFF1;border-radius:10px;overflow:hidden}
 .progress-fill{height:100%;border-radius:10px;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
 .cat-card{padding:13px 15px;margin-bottom:8px;transition:transform 0.2s}
 .cat-card:hover{transform:translateY(-1px)}
 .cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .cat-left{display:flex;align-items:center;gap:8px}
-.cat-icon-box{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:14px}
-.cat-name{font-size:13px;font-weight:700;color:#fff}
-.cat-amount{font-size:13px;font-weight:800;color:#fff}
-.cat-budget{font-size:10px;color:rgba(255,255,255,0.45)}
+.cat-icon-box{width:30px;height:30px;border-radius:9px;background:#FFFFFF;border:1px solid rgba(28,26,22,0.08);display:flex;align-items:center;justify-content:center;font-size:14px}
+.cat-name{font-size:14px;font-weight:700;color:#1C1A16}
+.cat-amount{font-size:14px;font-weight:800;color:#1C1A16}
+.cat-budget{font-size:10px;color:rgba(28,26,22,0.42)}
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:800;letter-spacing:0.06em;margin-left:5px}
 .goal-card{padding:16px;margin-bottom:10px;transition:transform 0.2s}
 .goal-card:hover{transform:translateY(-1px)}
 .goal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.goal-icon-box{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:19px}
-.goal-name{font-size:14px;font-weight:800;color:#fff;margin-bottom:1px}
-.goal-date{font-size:10px;color:rgba(255,255,255,0.48)}
-.goal-pct{font-family:'Lora',serif;font-size:26px;font-weight:400;color:#fff;line-height:1}
-.goal-track{height:7px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;margin-bottom:6px}
-.goal-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.5),#fff);box-shadow:0 0 10px rgba(255,255,255,0.2)}
-.goal-nums{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px;font-weight:600}
+.goal-icon-box{width:36px;height:36px;border-radius:11px;background:#FFFFFF;border:1px solid rgba(28,26,22,0.08);display:flex;align-items:center;justify-content:center;font-size:16px}
+.goal-name{font-size:15px;font-weight:800;color:#1C1A16;margin-bottom:1px}
+.goal-date{font-size:10px;color:rgba(28,26,22,0.45)}
+.goal-pct{font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;color:#9C7440;line-height:1;letter-spacing:-0.01em}
+.goal-track{height:8px;background:#EEEFF1;border-radius:10px;overflow:hidden;margin-bottom:6px}
+.goal-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#9C7440,#E0A85C)}
+.goal-nums{display:flex;justify-content:space-between;font-size:11px;color:rgba(28,26,22,0.48);margin-bottom:12px;font-weight:600}
 .goal-actions{display:flex;gap:6px}
-.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-overlay);backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.active{display:flex}
 .modal{width:100%;max-width:430px;padding:26px 22px 36px;border-radius:26px 26px 0 0;animation:slideUp 0.35s cubic-bezier(.22,1,.36,1)}
-.modal-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
-.advisor-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;background:rgba(8,25,15,0.65);backdrop-filter:blur(20px)}
-.advisor-avatar{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(255,255,255,0.22)}
-.advisor-name{font-size:14px;font-weight:800;color:#fff}
+.modal-title{font-size:var(--text-lg);font-weight:700;color:var(--color-ink);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:var(--color-surface-sunken);border:none;color:var(--color-ink);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.advisor-header{padding:16px 20px 12px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px)}
+.advisor-avatar{width:40px;height:40px;border-radius:var(--radius-md);background:var(--color-brand);display:flex;align-items:center;justify-content:center;font-size:20px;border:none;overflow:hidden;position:relative}
+.advisor-name{font-size:var(--text-base);font-weight:700;color:var(--color-ink)}
 .advisor-status{display:flex;align-items:center;gap:5px;margin-top:2px}
-.status-dot{width:5px;height:5px;border-radius:50%;background:#7fff7f;animation:pdot 2s ease-in-out infinite}
+.status-dot{width:5px;height:5px;border-radius:50%;background:var(--color-positive);animation:pdot 2s ease-in-out infinite}
 @keyframes pdot{0%,100%{opacity:1}50%{opacity:0.3}}
-.status-text{font-size:10px;color:#7fff7f;font-weight:700}
+.status-text{font-size:var(--text-xs);color:var(--color-ink-secondary);font-weight:600}
 .messages-wrap{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
 .messages-wrap::-webkit-scrollbar{display:none}
 .msg-sage{display:flex;gap:8px;align-items:flex-start;animation:slideUp 0.3s ease}
-.msg-avatar{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.13);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;border:1px solid rgba(255,255,255,0.18)}
+.msg-avatar{width:26px;height:26px;border-radius:8px;background:var(--color-brand);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;border:none;overflow:hidden;position:relative}
 .msg-bubble-sage{border-radius:4px 16px 16px 16px;padding:11px 13px;max-width:82%}
-.msg-label{font-size:9px;font-weight:800;color:rgba(255,255,255,0.65);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
-.msg-text-sage{font-family:'Lora',serif;font-size:15px;color:#fff;line-height:1.7}
+.msg-label{font-size:var(--text-xs);font-weight:600;color:var(--color-ink-muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px}
+.msg-text-sage{font-family:var(--font-voice);font-size:var(--text-md);font-style:normal;color:var(--color-ink);line-height:1.7}
 .msg-user{display:flex;justify-content:flex-end;animation:slideUp 0.3s ease}
-.msg-bubble-user{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.28);border-radius:16px 4px 16px 16px;padding:10px 13px;max-width:78%}
-.msg-text-user{font-size:13px;color:#fff;line-height:1.6;font-weight:500}
+.msg-bubble-user{background:var(--color-ink);border:1px solid var(--color-ink);border-radius:16px 4px 16px 16px;padding:10px 13px;max-width:78%}
+.msg-text-user{font-size:var(--text-base);color:var(--color-canvas);line-height:1.6;font-weight:500}
 .quick-prompts{display:flex;gap:7px;overflow-x:auto;padding:8px 16px 6px;scrollbar-width:none}
 .quick-prompts::-webkit-scrollbar{display:none}
-.quick-pill{background:rgba(255,255,255,0.11);border:1px solid rgba(255,255,255,0.22);border-radius:16px;color:#fff;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
-.quick-pill:hover{background:rgba(255,255,255,0.2)}
-.input-bar{padding:10px 16px 24px;background:rgba(8,25,15,0.75);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08)}
-.input-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.11);border-radius:22px;padding:9px 13px;border:1px solid rgba(255,255,255,0.18)}
-.chat-input{border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;color:#fff;flex:1;outline:none;font-weight:500}
-.chat-input::placeholder{color:rgba(255,255,255,0.35)}
-.send-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
-.send-btn:hover{background:rgba(255,255,255,0.28)}
-.chat-disclaimer{font-size:9px;color:rgba(255,255,255,0.32);text-align:center;margin-top:5px;letter-spacing:0.1em;text-transform:uppercase}
+.quick-pill{background:transparent;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);color:var(--color-ink-secondary);font-family:var(--font-sans);font-size:var(--text-xs);font-weight:500;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:all var(--dur-fast);flex-shrink:0}
+.quick-pill:hover{background:var(--color-surface-sunken)}
+.input-bar{padding:10px 16px 24px;background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);border-top:1px solid var(--color-border)}
+.input-wrap{display:flex;align-items:center;gap:8px;background:var(--color-surface-sunken);border-radius:var(--radius-pill);padding:9px 13px;border:1px solid var(--color-border)}
+.chat-input{border:none;background:transparent;font-family:var(--font-sans);font-size:var(--text-base);color:var(--color-ink);flex:1;outline:none;font-weight:400}
+.chat-input::placeholder{color:var(--color-ink-muted)}
+.send-btn{width:30px;height:30px;border-radius:50%;background:var(--color-ink);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--dur-fast)}
+.send-btn:hover{background:var(--color-brand-strong)}
+.chat-disclaimer{font-size:var(--text-xs);color:var(--color-ink-muted);text-align:center;margin-top:6px;letter-spacing:0.02em;line-height:1.6;font-weight:500;text-transform:none}
 .typing{display:flex;gap:4px;align-items:center;padding:6px 0}
-.typing-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.6);animation:tdot 1.4s infinite ease-in-out}
+.typing-dot{width:5px;height:5px;border-radius:50%;background:rgba(28,26,22,0.4);animation:tdot 1.4s infinite ease-in-out}
 @keyframes tdot{0%,80%,100%{transform:translateY(0);opacity:0.4}40%{transform:translateY(-5px);opacity:1}}
-.screen-disclaimer{text-align:center;padding:8px 18px 4px;font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:0.08em;text-transform:uppercase;font-weight:600}
+.screen-disclaimer{text-align:center;padding:8px 18px 4px;font-size:var(--text-xs);color:var(--color-ink-muted);letter-spacing:0.02em;font-weight:500;text-transform:none}
 .alert-banner{margin:8px 18px 0;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:600;display:none}
-.alert-warning{background:rgba(255,200,50,0.2);border:1px solid rgba(255,200,50,0.35);color:#ffd84f}
-.alert-danger{background:rgba(255,100,80,0.2);border:1px solid rgba(255,100,80,0.3);color:#ff8877}
-.celebrate-banner{position:relative;background:linear-gradient(135deg,rgba(127,255,127,0.22),rgba(100,200,255,0.18));border:1px solid rgba(127,255,127,0.4);border-radius:14px;padding:13px 38px 13px 15px;margin-bottom:8px;animation:fadeUp 0.5s cubic-bezier(.22,1,.36,1) both}
-.celebrate-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px}
-.celebrate-body{font-size:12px;color:rgba(255,255,255,0.82);line-height:1.5}
-.celebrate-close{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
-.celebrate-close:hover{background:rgba(255,255,255,0.28)}
-.search-bar{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:10px 14px;font-size:13px;font-family:'Nunito',sans-serif;color:#fff;outline:none;width:100%;margin-bottom:12px}
-.search-bar::placeholder{color:rgba(255,255,255,0.35)}
+.alert-warning{background:var(--color-warning-wash);border:1px solid rgba(184,134,11,0.3);color:var(--color-warning)}
+.alert-danger{background:var(--color-negative-wash);border:1px solid rgba(163,64,50,0.28);color:var(--color-negative)}
+.celebrate-banner{position:relative;background:var(--color-positive-wash);border:1px solid rgba(63,117,80,0.3);border-radius:var(--radius-md);padding:13px 38px 13px 15px;margin-bottom:8px;animation:fadeUp var(--dur-slow) var(--ease-standard) both}
+.celebrate-title{font-size:var(--text-base);font-weight:700;color:var(--color-ink);margin-bottom:2px}
+.celebrate-body{font-size:var(--text-sm);color:var(--color-ink-secondary);line-height:1.5}
+.celebrate-close{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--color-surface-sunken);border:none;color:var(--color-ink);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.celebrate-close:hover{background:var(--color-border-strong)}
+.search-bar{background:var(--color-surface-sunken);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 14px;font-size:var(--text-base);font-family:var(--font-sans);color:var(--color-ink);outline:none;width:100%;margin-bottom:12px}
+.search-bar::placeholder{color:var(--color-ink-muted)}
 .chart-bar-container{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px;margin-bottom:8px}
-.chart-tab{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;color:rgba(255,255,255,0.6);font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.04em;padding:5px 11px;cursor:pointer;transition:all 0.2s}
-.chart-tab.active{background:rgba(127,255,127,0.22);border-color:rgba(127,255,127,0.4);color:#7fff7f}
+.chart-tab{background:var(--color-surface-sunken);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-ink-secondary);font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;letter-spacing:0.02em;padding:5px 11px;cursor:pointer;transition:all var(--dur-fast)}
+.chart-tab.active{background:var(--color-brand-wash);border-color:var(--color-brand-wash-strong);color:var(--color-brand)}
 .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height 0.8s ease;background:rgba(127,255,127,0.5)}
-.chart-label{font-size:8px;color:rgba(255,255,255,0.5);font-weight:700;letter-spacing:0.05em}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height 0.8s ease;background:#9C7440}
+.chart-label{font-size:8px;color:rgba(28,26,22,0.45);font-weight:700;letter-spacing:0.05em}
 .plan-card{padding:18px;margin-bottom:10px;transition:transform 0.2s}
 .plan-card:hover{transform:translateY(-1px)}
-.plan-name{font-size:15px;font-weight:800;color:#fff;margin-bottom:3px}
-.plan-price{font-size:30px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px}
-.plan-price span{font-size:13px;font-weight:400;opacity:0.65}
+.plan-name{font-size:15px;font-weight:800;color:#1C1A16;margin-bottom:3px}
+.plan-price{font-size:30px;font-weight:800;color:#1C1A16;line-height:1;margin-bottom:12px}
+.plan-price span{font-size:13px;font-weight:400;opacity:0.6}
 .plan-features{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
-.plan-feature{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.82);font-weight:500}
+.plan-feature{display:flex;align-items:center;gap:7px;font-size:12px;color:#1C1A16;font-weight:500}
 .plan-btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em}
-.profile-item{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:background 0.15s}
-.profile-item:hover{background:rgba(255,255,255,0.04)}
+.profile-item{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--color-border);cursor:pointer;transition:background var(--dur-fast)}
+.profile-item:hover{background:var(--color-surface-sunken)}
 .profile-item:last-child{border-bottom:none}
-.profile-label{font-size:13px;font-weight:600;color:#fff}
-.profile-sub{font-size:11px;color:rgba(255,255,255,0.48);margin-top:1px}
-.toggle-switch{width:42px;height:22px;background:rgba(255,255,255,0.2);border-radius:11px;position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
-.toggle-switch.on{background:rgba(127,255,127,0.5)}
+.profile-label{font-size:var(--text-base);font-weight:500;color:var(--color-ink)}
+.profile-sub{font-size:var(--text-sm);color:var(--color-ink-muted);margin-top:1px}
+.toggle-switch{width:42px;height:22px;background:#DADDE1;border-radius:11px;position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
+.toggle-switch.on{background:#9C7440}
 .toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.3s}
 .toggle-switch.on::after{transform:translateX(20px)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp 0.4s cubic-bezier(.22,1,.36,1) both}
+.ring-icon{position:relative;display:inline-flex;flex-direction:column;align-items:center;text-align:center}
+.ring-icon i{position:absolute;top:13px;left:13px;font-size:13px;color:var(--color-ink-secondary)}
+.ring-icon-label{font-size:var(--text-xs);color:var(--color-ink-muted);margin-top:5px;white-space:nowrap}
+
+/* ---- Brand mark: neutral placeholder identity, used wherever branding
+   appears until the trademark search lands on a final name/logo. ---- */
+.brand-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.brand-mark::before{content:'';width:40%;height:40%;background:var(--color-canvas);clip-path:polygon(0 0,72% 0,100% 28%,100% 100%,0 100%)}
+.brand-mark-lg::before{width:34%;height:34%}
+
+/* ---- Home v2 ---- */
+.hero-v2{padding:22px 20px;margin-top:12px;margin-bottom:10px;position:relative;overflow:hidden}
+.hero-v2-label{font-size:var(--text-xs);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-ink-secondary);margin-bottom:6px}
+.hero-v2-amount{font-family:var(--font-sans);font-size:var(--text-hero);font-weight:800;color:var(--color-ink);letter-spacing:-0.02em;line-height:1.02;margin-bottom:14px}
+.hero-v2-sub{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--color-border)}
+.hero-v2-sub-left{font-size:var(--text-sm);color:var(--color-ink-secondary)}
+.hero-v2-sub-left strong{color:var(--color-ink);font-weight:700;margin-left:4px}
+.hero-v2-sub-left small{display:block;font-size:var(--text-xs);color:var(--color-ink-muted);margin-top:1px}
+
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-header .section-label{margin:0}
+.section-header a{font-size:var(--text-xs);font-weight:600;color:var(--color-brand);cursor:pointer}
+
+.brief-card{padding:16px 18px;margin-bottom:10px}
+.brief-card .section-label{margin-bottom:8px}
+.brief-line{font-family:var(--font-voice);font-size:var(--text-md);color:var(--color-ink);line-height:1.65;padding:5px 0}
+.brief-line + .brief-line{border-top:1px solid var(--color-border)}
+.brief-empty{font-size:var(--text-sm);color:var(--color-ink-muted);cursor:pointer;padding:4px 0}
+
+.bills-card{padding:14px 16px;margin-bottom:10px}
+.bill-row{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:var(--text-sm)}
+.bill-row + .bill-row{border-top:1px solid var(--color-border)}
+.bill-row .bill-name{flex:1;color:var(--color-ink);font-weight:500}
+.bill-row .bill-when{color:var(--color-ink-muted);font-size:var(--text-xs)}
+.bill-row .bill-amt{color:var(--color-ink);font-weight:700}
+
+.savings-card{padding:14px 16px;margin-bottom:10px}
+.savings-row{display:flex;align-items:center;gap:12px;cursor:pointer}
+.savings-row .goal-pct{font-size:var(--text-xl);font-weight:800}
+
+.empty-note{font-size:var(--text-sm);color:var(--color-ink-muted);cursor:pointer;padding:2px 0}
 </style>
 </head>
 <body>
@@ -217,7 +310,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 <div class="modal-overlay" id="modal-recurring">
   <div class="modal glass-strong">
     <div class="modal-title">🔁 Recurring <button class="modal-close" onclick="closeModal('modal-recurring')">×</button></div>
-    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:12px">Set up payments that repeat automatically — rent, salary, subscriptions. They're added for you on their due date.</p>
+    <p style="font-size:12px;color:rgba(28,26,22,0.65);margin-bottom:12px">Set up payments that repeat automatically — rent, salary, subscriptions. They're added for you on their due date.</p>
     <div id="recurring-list" style="margin-bottom:12px"></div>
     <button class="btn-primary" onclick="closeModal('modal-recurring');openModal('modal-add-recurring')">+ Add Recurring</button>
     <button class="btn-outline" id="recurring-clear-all-btn" style="display:none;margin-top:8px" onclick="clearAllRecurring()">🗑️ Clear All Recurring</button>
@@ -282,7 +375,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   <div class="modal glass-strong">
     <div class="modal-title">Add to Goal <button class="modal-close" onclick="closeModal('modal-contribute-goal')">×</button></div>
     <input type="hidden" id="contribute-goal-id">
-    <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px" id="contribute-goal-name"></p>
+    <p style="font-size:13px;color:rgba(28,26,22,0.7);margin-bottom:16px" id="contribute-goal-name"></p>
     <label class="form-label">Amount to Add (<span class="cur-sym">$</span>)</label>
     <input class="form-input" id="contribute-amount" type="number" placeholder="100">
     <button class="btn-primary" onclick="contributeToGoal()">Add Savings ✓</button>
@@ -326,7 +419,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 <div class="modal-overlay" id="modal-currency">
   <div class="modal glass-strong">
     <div class="modal-title">💱 Currency <button class="modal-close" onclick="closeModal('modal-currency')">×</button></div>
-    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:14px">Choose the currency your amounts are shown in. Default is USD.</p>
+    <p style="font-size:12px;color:rgba(28,26,22,0.65);margin-bottom:14px">Choose the currency your amounts are shown in. Default is USD.</p>
     <div id="currency-options"></div>
   </div>
 </div>
@@ -341,8 +434,8 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <button class="btn-primary" id="tut-next-btn" style="flex:2;margin:0">Next →</button>
     </div>
     <div style="text-align:center;margin-top:10px;display:flex;justify-content:center;gap:16px">
-      <span class="form-link" id="tut-skip-step" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none;display:none" onclick="tutorialSkipStep()">Skip this step →</span>
-      <span class="form-link" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none" onclick="closeTutorial()">Skip tour</span>
+      <span class="form-link" id="tut-skip-step" style="font-size:11px;color:rgba(28,26,22,0.5);text-decoration:none;display:none" onclick="tutorialSkipStep()">Skip this step →</span>
+      <span class="form-link" style="font-size:11px;color:rgba(28,26,22,0.5);text-decoration:none" onclick="closeTutorial()">Skip tour</span>
     </div>
   </div>
 </div>
@@ -350,8 +443,8 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 <div class="modal-overlay" id="modal-feedback">
   <div class="modal glass-strong">
     <div class="modal-title">💬 Send Feedback <button class="modal-close" onclick="closeModal('modal-feedback')">×</button></div>
-    <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:14px">Tell us what you love, what's frustrating, or what you wish Thrive AI could do. We read every message.</p>
-    <div class="success-msg" id="feedback-success">Thank you! Your feedback has been sent. 🌿</div>
+    <p style="font-size:12px;color:rgba(28,26,22,0.65);margin-bottom:14px">Tell us what you love, what's frustrating, or what you wish Thrive AI could do. We read every message.</p>
+    <div class="success-msg" id="feedback-success">Thank you! Your feedback has been sent.</div>
     <textarea class="form-input" id="feedback-message" rows="5" placeholder="Type your feedback here..." style="resize:none;min-height:110px"></textarea>
     <button class="btn-primary" onclick="submitFeedback()">Send Feedback ✓</button>
   </div>
@@ -362,18 +455,18 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   <div class="landing">
     <div class="landing-content">
       <div class="landing-card glass-strong">
-        <div style="font-size:44px;text-align:center;margin-bottom:8px">🌿</div>
+        <div style="width:52px;height:52px;border-radius:14px;background:#1C1A16;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-chart-donut-3" style="font-size:24px;color:#9C7440" aria-hidden="true"></i></div>
         <div class="app-title">Thrive AI</div>
-        <div class="app-tagline">Your personal finance coach — breathe free 🏔️</div>
+        <div class="app-tagline">Your personal finance coach</div>
         <div class="feature-list">
           <div class="feature-item"><div class="feature-dot">✓</div>Track spending automatically</div>
           <div class="feature-item"><div class="feature-dot">✓</div>AI coach that knows your numbers</div>
           <div class="feature-item"><div class="feature-dot">✓</div>Set goals and get a personalised plan</div>
           <div class="feature-item"><div class="feature-dot">✓</div>Weekly briefings in plain English</div>
         </div>
-        <button class="btn-primary" onclick="show('s-signup')">Get Started — Free 🌱</button>
+        <button class="btn-primary" onclick="show('s-signup')">Get started — free</button>
         <button class="btn-outline" onclick="show('s-login')">I Already Have an Account</button>
-        <div style="font-size:9px;color:rgba(255,255,255,0.45);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+        <div style="font-size:10.5px;color:#1C1A16;text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
       </div>
     </div>
   </div>
@@ -384,7 +477,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   <div class="auth-page">
     <div class="auth-card glass-strong">
       <button class="back-btn" onclick="show('s-landing')">← Back</button>
-      <div class="auth-logo">🌿 Thrive AI</div>
+      <div class="auth-logo">Thrive AI</div>
       <div class="auth-sub">Create your free account</div>
       <div class="error-msg" id="signup-error"></div>
       <label class="form-label">Your Name</label>
@@ -396,9 +489,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters" style="padding-right:44px">
         <span onclick="togglePasswordVisibility('signup-password',this)" style="position:absolute;right:14px;top:13px;cursor:pointer;font-size:16px;user-select:none">👁️</span>
       </div>
-      <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create My Account 🌱</button>
+      <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create my account</button>
       <div class="form-divider">Already have an account? <span class="form-link" onclick="show('s-login')">Sign in</span></div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+      <div style="font-size:10.5px;color:#1C1A16;text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
     </div>
   </div>
 </div>
@@ -408,7 +501,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
   <div class="auth-page">
     <div class="auth-card glass-strong">
       <button class="back-btn" onclick="show('s-landing')">← Back</button>
-      <div class="auth-logo">🌿 Thrive AI</div>
+      <div class="auth-logo">Thrive AI</div>
       <div class="auth-sub">Welcome back</div>
       <div class="error-msg" id="login-error"></div>
       <label class="form-label">Email Address</label>
@@ -418,10 +511,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <input class="form-input" id="login-password" type="password" placeholder="Your password" style="padding-right:44px">
         <span onclick="togglePasswordVisibility('login-password',this)" style="position:absolute;right:14px;top:13px;cursor:pointer;font-size:16px;user-select:none">👁️</span>
       </div>
-      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In 🌿</button>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in</button>
       <div style="text-align:center;margin:2px 0 6px"><span class="form-link" style="font-size:12px;font-weight:600" onclick="forgotPassword()">Forgot password?</span></div>
       <div class="form-divider">No account? <span class="form-link" onclick="show('s-signup')">Sign up free</span></div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+      <div style="font-size:10.5px;color:#1C1A16;text-align:center;margin-top:10px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
     </div>
   </div>
 </div>
@@ -430,7 +523,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 <div class="screen" id="s-onboard">
   <div class="auth-page">
     <div class="auth-card glass-strong">
-      <div class="auth-logo">🌿 Thrive AI</div>
+      <div class="auth-logo">Thrive AI</div>
       <div class="auth-sub" id="onboard-sub">Let's set up your profile</div>
       <div class="onboard-progress">
         <div class="onboard-dot active" id="od1"></div>
@@ -440,7 +533,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       <div class="onboard-step active" id="ob-step1">
         <label class="form-label">What's your monthly income? (<span class="cur-sym">$</span>)</label>
         <input class="form-input" id="ob-income" type="number" placeholder="e.g. 3000">
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">This helps Thrive AI calculate your savings rate accurately.</div>
+        <div style="font-size:12px;color:rgba(28,26,22,0.55);margin-bottom:16px">This helps Thrive AI calculate your savings rate accurately.</div>
         <button class="btn-primary" onclick="obNext(1)">Next →</button>
       </div>
       <div class="onboard-step" id="ob-step2">
@@ -448,19 +541,19 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <input class="form-input" id="ob-goal-name" placeholder="e.g. Emergency Fund, Vacation...">
         <label class="form-label">Target Amount (<span class="cur-sym">$</span>)</label>
         <input class="form-input" id="ob-goal-target" type="number" placeholder="5000">
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:16px">You can add more goals later.</div>
+        <div style="font-size:12px;color:rgba(28,26,22,0.55);margin-bottom:16px">You can add more goals later.</div>
         <button class="btn-primary" onclick="obNext(2)">Next →</button>
         <button class="btn-outline" onclick="obSkip(2)">Skip for now</button>
       </div>
       <div class="onboard-step" id="ob-step3">
         <div style="text-align:center;margin-bottom:20px">
-          <div style="font-size:48px;margin-bottom:12px">🎉</div>
-          <div style="font-family:'Lora',serif;font-size:22px;color:#fff;margin-bottom:8px">You're all set!</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6">Start by adding your first transaction. Thrive AI will coach you from there.</div>
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--color-brand);position:relative;margin:0 auto 16px"><div class="brand-mark"></div></div>
+          <div style="font-family:var(--font-sans);font-size:22px;font-weight:700;color:var(--color-ink);margin-bottom:8px">You're all set</div>
+          <div style="font-size:13px;color:var(--color-ink-secondary);line-height:1.6">Start by adding your first transaction. Thrive AI will coach you from there.</div>
         </div>
-        <button class="btn-primary" onclick="finishOnboard()">Open My Dashboard 🌿</button>
+        <button class="btn-primary" onclick="finishOnboard()">Open my dashboard</button>
       </div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-top:12px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+      <div style="font-size:10.5px;color:#1C1A16;text-align:center;margin-top:12px;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
     </div>
   </div>
 </div>
@@ -472,61 +565,50 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <!-- HOME TAB -->
     <div id="tab-home" class="tab-content">
       <div class="top-bar">
-        <div class="top-bar-name" id="greeting">Good morning 👋</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:13px;cursor:pointer;color:rgba(255,255,255,0.7);font-weight:600" onclick="showMonthlySummary()">📊</span>
-          <span style="font-size:20px;cursor:pointer" onclick="switchTab('profile')">👤</span>
+        <div class="top-bar-name" id="greeting">Good morning</div>
+        <div style="display:flex;gap:16px;align-items:center">
+          <i class="ti ti-chart-bar" style="font-size:19px;cursor:pointer;color:var(--color-ink-secondary)" onclick="showMonthlySummary()" aria-hidden="true"></i>
+          <i class="ti ti-user-circle" style="font-size:22px;cursor:pointer;color:var(--color-ink-secondary)" onclick="switchTab('profile')" aria-hidden="true"></i>
         </div>
       </div>
       <div id="celebrations" style="margin:8px 18px 0"></div>
-      <div id="bill-reminders" style="margin:8px 18px 0"></div>
       <div id="budget-alerts" style="margin:8px 18px 0"></div>
       <div class="page-pad">
-        <div class="hero-card glass animate-in" style="margin-top:12px">
-          <div class="hero-label">Net Balance</div>
-          <div class="hero-amount" id="net-worth-display">$0</div>
-          <div class="hero-badge" id="savings-badge">Add transactions to get started</div>
-        </div>
-        <div class="stat-grid">
-          <div class="stat-card glass animate-in stat-tappable" onclick="openStatDetail('income')"><div class="stat-label">Income</div><div class="stat-value" id="stat-income">$0</div><div class="stat-sub">This month ›</div></div>
-          <div class="stat-card glass animate-in stat-tappable" onclick="openStatDetail('spent')"><div class="stat-label">Spent</div><div class="stat-value" id="stat-spent">$0</div><div class="stat-sub">This month ›</div></div>
-          <div class="stat-card glass animate-in stat-tappable" onclick="openStatDetail('saved')"><div class="stat-label">Saved</div><div class="stat-value" id="stat-saved">$0</div><div class="stat-sub">This month ›</div></div>
-          <div class="stat-card glass animate-in stat-tappable" onclick="openStatDetail('count')"><div class="stat-label">Transactions</div><div class="stat-value" id="stat-count">0</div><div class="stat-sub">Total ›</div></div>
-        </div>
 
-        <!-- Spending chart -->
-        <div class="glass animate-in" style="padding:14px;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="display:flex;gap:5px" id="chart-range-tabs">
-              <button class="chart-tab active" data-range="daily" onclick="setChartRange('daily')">Daily</button>
-              <button class="chart-tab" data-range="weekly" onclick="setChartRange('weekly')">Weekly</button>
-              <button class="chart-tab" data-range="monthly" onclick="setChartRange('monthly')">Monthly</button>
+        <!-- Hero: the one number that answers "can I spend right now" -->
+        <div class="hero-v2 glass animate-in">
+          <div class="hero-v2-label">Available to spend</div>
+          <div class="hero-v2-amount" id="available-to-spend-display">$0</div>
+          <div class="hero-v2-sub" onclick="openStatDetail('saved')" style="cursor:pointer">
+            <div class="hero-v2-sub-left">Total balance <strong id="net-worth-display">$0</strong>
+              <small id="savings-badge">Add transactions to get started</small>
             </div>
-            <div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,0.5)">
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(127,255,127,0.5);display:inline-block"></span>Income</span>
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:rgba(255,150,80,0.5);display:inline-block"></span>Spent</span>
-            </div>
-          </div>
-          <div class="chart-bar-container" id="spending-chart" style="cursor:pointer" onclick="openChartDetail()"></div>
-          <div id="spending-forecast" style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:6px;font-weight:600"></div>
-          <div onclick="openChartDetail()" style="text-align:center;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#7fff7f;cursor:pointer">View Full Breakdown →</div>
-        </div>
-
-        <div class="section-label" style="margin-top:4px">Thrive AI Notices</div>
-        <div id="home-insights">
-          <div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,0.7)" onclick="openModal('modal-add-tx')">
-            <div class="insight-title">💡 Getting Started</div>
-            <div class="insight-body">Add your first transaction to see personalised insights from Thrive AI.</div>
-            <div class="insight-cta">ADD TRANSACTION →</div>
+            <div id="hero-sparkline"></div>
           </div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;margin-top:4px">
-          <div class="section-label" style="margin:0">Recent</div>
-          <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Add</button>
+        <!-- Today's AI Brief: the 3-4 things worth knowing, no LLM call needed —
+             composed instantly from data already on the page. -->
+        <div class="brief-card glass animate-in">
+          <div class="section-label">Today's AI brief</div>
+          <div id="home-brief-body"><div class="brief-empty" onclick="openModal('modal-add-tx')">Add a few transactions and I'll start giving you a daily brief here →</div></div>
+        </div>
+
+        <div class="bills-card glass animate-in">
+          <div class="section-header"><div class="section-label">Upcoming bills</div><a onclick="renderRecurring();openModal('modal-recurring')">View all</a></div>
+          <div id="home-bills-compact"><div class="empty-note" onclick="renderRecurring();openModal('modal-recurring')">Add a recurring bill to track it here ›</div></div>
+        </div>
+
+        <div class="savings-card glass animate-in">
+          <div id="home-savings-progress"><div class="section-label">Savings progress</div><div class="empty-note" onclick="openModal('modal-add-goal')">No goals yet — set one to start tracking ›</div></div>
+        </div>
+
+        <div class="section-header" style="margin-top:4px">
+          <div class="section-label">Recent</div>
+          <a onclick="switchTab('spend')">See all</a>
         </div>
         <div class="tx-card glass" id="home-transactions">
-          <div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
+          <div class="tx-row"><div style="font-size:12px;color:var(--color-ink-muted);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Thrive AI is not a licensed financial adviser</div>
         <div style="height:8px"></div>
@@ -539,11 +621,11 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2px">
           <div>
             <div class="section-label">Spending This Month</div>
-            <div style="font-family:'Lora',serif;font-size:38px;font-weight:400;color:#fff;letter-spacing:-0.02em" id="spend-total">$0</div>
+            <div style="font-family:'Nunito',sans-serif;font-size:34px;font-weight:800;color:#1C1A16;letter-spacing:-0.02em" id="spend-total">$0</div>
           </div>
           <button class="btn-small btn-green" onclick="openModal('modal-add-tx')">+ Transaction</button>
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px" id="spend-subtitle">Add transactions to see your spending</div>
+        <div style="font-size:12px;color:rgba(28,26,22,0.55);margin-bottom:14px" id="spend-subtitle">Add transactions to see your spending</div>
 
         <input class="search-bar" id="tx-search" placeholder="🔍 Search transactions..." oninput="filterTransactions()">
 
@@ -553,19 +635,19 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         </div>
         <div style="margin-bottom:12px">
           <button class="btn-outline" id="tut-target-recurring" style="width:100%;padding:10px;font-size:12px;margin:0" onclick="renderRecurring();openModal('modal-recurring')">🔁 Recurring Payments</button>
-          <div id="recurring-limit-indicator" style="display:none;font-size:10px;color:rgba(255,255,255,0.45);text-align:center;margin-top:6px"></div>
+          <div id="recurring-limit-indicator" style="display:none;font-size:10px;color:rgba(28,26,22,0.45);text-align:center;margin-top:6px"></div>
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="section-label" style="margin:0">By Category</div>
           <button class="btn-small btn-blue" style="cursor:pointer" onclick="openModal('modal-add-budget')">⚙ Set Budgets</button>
         </div>
-        <div id="budget-limit-indicator" style="display:none;font-size:10px;color:rgba(255,255,255,0.45);margin:-4px 0 10px"></div>
-        <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div></div>
+        <div id="budget-limit-indicator" style="display:none;font-size:10px;color:rgba(28,26,22,0.45);margin:-4px 0 10px"></div>
+        <div id="categories-list"><div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(28,26,22,0.45)">Add transactions to see categories</div></div>
 
         <div class="section-label" style="margin-top:12px">All Transactions</div>
         <div class="tx-card glass" id="all-transactions">
-          <div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
+          <div class="tx-row"><div style="font-size:12px;color:rgba(28,26,22,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice</div>
         <div style="height:8px"></div>
@@ -578,26 +660,26 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
           <div>
             <div class="section-label">Your Goals</div>
-            <div style="font-family:'Lora',serif;font-size:24px;font-weight:400;color:#fff;line-height:1.3">Financial milestones 🎯</div>
+            <div style="font-family:'Lora',serif;font-size:27px;font-weight:600;color:#1C1A16;line-height:1.25">Financial milestones</div>
           </div>
           <button class="btn-small btn-green" id="tut-target-goal" onclick="openModal('modal-add-goal')">+ Goal</button>
         </div>
-        <div id="goals-limit-indicator" style="display:none;font-size:11px;color:rgba(255,255,255,0.5);margin:-10px 0 12px"></div>
+        <div id="goals-limit-indicator" style="display:none;font-size:11px;color:rgba(28,26,22,0.5);margin:-10px 0 12px"></div>
         <div id="goals-list">
           <div class="glass" style="padding:18px;text-align:center">
             <div style="font-size:30px;margin-bottom:8px">🎯</div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:12px">No goals yet. Set your first financial goal!</div>
+            <div style="font-size:13px;color:rgba(28,26,22,0.65);margin-bottom:12px">No goals yet. Set your first financial goal!</div>
             <button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button>
           </div>
         </div>
         <div class="section-label" style="margin-top:12px">💡 What If</div>
         <div class="glass" style="padding:12px 14px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
-          <div style="font-family:'Lora',serif;font-size:13px;font-style:italic;color:#fff;margin-bottom:4px">"How do I reach my goals faster?"</div>
-          <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Thrive AI →</div>
+          <div style="font-family:'Lora',serif;font-size:13px;font-style:normal;color:#1C1A16;margin-bottom:4px">"How do I reach my goals faster?"</div>
+          <div style="font-size:10px;font-weight:800;color:rgba(28,26,22,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Thrive AI →</div>
         </div>
         <div class="glass" style="padding:12px 14px;margin-bottom:8px;cursor:pointer" onclick="switchTab('advisor')">
-          <div style="font-family:'Lora',serif;font-size:13px;font-style:italic;color:#fff;margin-bottom:4px">"Should I pay debt or save first?"</div>
-          <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Thrive AI →</div>
+          <div style="font-family:'Lora',serif;font-size:13px;font-style:normal;color:#1C1A16;margin-bottom:4px">"Should I pay debt or save first?"</div>
+          <div style="font-size:10px;font-weight:800;color:rgba(28,26,22,0.6);letter-spacing:0.06em;text-transform:uppercase">Ask Thrive AI →</div>
         </div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice</div>
         <div style="height:8px"></div>
@@ -607,7 +689,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <!-- ADVISOR TAB -->
     <div id="tab-advisor" class="tab-content" style="display:none;flex-direction:column;height:calc(100vh - 57px)">
       <div class="advisor-header">
-        <div class="advisor-avatar">🌿</div>
+        <div class="advisor-avatar"><div class="brand-mark"></div></div>
         <div>
           <div class="advisor-name">Thrive AI Advisor</div>
           <div class="advisor-status"><div class="status-dot"></div><div class="status-text" id="advisor-status-text">Active · AI Powered</div></div>
@@ -616,7 +698,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
       </div>
       <div class="messages-wrap" id="messages">
         <div class="msg-sage">
-          <div class="msg-avatar">🌿</div>
+          <div class="msg-avatar"><div class="brand-mark"></div></div>
           <div class="msg-bubble-sage glass">
             <div class="msg-label">Thrive AI</div>
             <div class="msg-text-sage">Hello! I'm Thrive AI, your personal finance coach. Add some transactions and I'll give you personalised insights based on your real numbers. I can make mistakes, so please double-check anything important. What would you like to know?</div>
@@ -649,36 +731,36 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
 
         <!-- Profile card -->
         <div class="glass animate-in" style="padding:20px;margin-bottom:12px;text-align:center">
-          <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid rgba(255,255,255,0.25)">👤</div>
-          <div style="font-family:'Lora',serif;font-size:20px;font-style:italic;color:#fff;margin-bottom:4px" id="profile-name-display">Loading...</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.55)" id="profile-email-display">...</div>
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(28,26,22,0.15);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid rgba(28,26,22,0.25)">👤</div>
+          <div style="font-family:'Lora',serif;font-size:20px;font-style:normal;color:#1C1A16;margin-bottom:4px" id="profile-name-display">Loading...</div>
+          <div style="font-size:12px;color:rgba(28,26,22,0.55)" id="profile-email-display">...</div>
         </div>
 
         <!-- Monthly income -->
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
           <div class="profile-item" id="tut-target-income" onclick="editIncome()">
             <div><div class="profile-label">💰 Monthly Income</div><div class="profile-sub" id="income-display">Not set</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" id="tut-target-currency" onclick="openModal('modal-currency')">
             <div><div class="profile-label">💱 Currency</div><div class="profile-sub" id="currency-display">US Dollar (USD)</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" id="tut-target-summary" onclick="showMonthlySummary()">
             <div><div class="profile-label">📊 Monthly Summary</div><div class="profile-sub">View this month's full report</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="exportCSV()">
             <div><div class="profile-label">📥 Export Transactions</div><div class="profile-sub">Download as CSV file</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="startTutorial()">
             <div><div class="profile-label">🎓 Replay Tutorial</div><div class="profile-sub">See the quick tour again</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="openFeedback()">
             <div><div class="profile-label">💬 Send Feedback</div><div class="profile-sub">Tell us what you'd love to see</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
         </div>
 
@@ -686,27 +768,27 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <div class="glass animate-in" style="overflow:hidden;margin-bottom:12px">
           <div class="profile-item" id="profile-upgrade-row" onclick="switchTab('plans')">
             <div><div class="profile-label">💎 Upgrade to Pro</div><div class="profile-sub">Unlock all features — $12/month</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" id="profile-manage-plan-row" style="display:none" onclick="switchTab('plans')">
             <div><div class="profile-label">💎 Manage Plan</div><div class="profile-sub">View your subscription details</div></div>
-            <span style="color:rgba(255,255,255,0.5);font-size:14px">›</span>
+            <span style="color:rgba(28,26,22,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" id="profile-manage-sub-row" style="display:none" onclick="cancelSubscription()">
-            <div><div class="profile-label" style="color:#ff8877">✕ Cancel Subscription</div><div class="profile-sub">You'll keep Pro until your billing period ends</div></div>
-            <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
+            <div><div class="profile-label" style="color:#C23B3B">✕ Cancel Subscription</div><div class="profile-sub">You'll keep Pro until your billing period ends</div></div>
+            <span style="color:rgba(197,50,50,0.5);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="clearAllData()">
             <div><div class="profile-label">🗑️ Clear All Data</div><div class="profile-sub">Delete all transactions and goals</div></div>
-            <span style="color:rgba(255,100,100,0.7);font-size:14px">›</span>
+            <span style="color:rgba(197,50,50,0.7);font-size:14px">›</span>
           </div>
           <div class="profile-item" onclick="doLogout()">
-            <div><div class="profile-label" style="color:#ff8877">🚪 Sign Out</div><div class="profile-sub">Log out of your account</div></div>
-            <span style="color:rgba(255,100,100,0.5);font-size:14px">›</span>
+            <div><div class="profile-label" style="color:#C23B3B">🚪 Sign Out</div><div class="profile-sub">Log out of your account</div></div>
+            <span style="color:rgba(197,50,50,0.5);font-size:14px">›</span>
           </div>
         </div>
 
-        <div style="text-align:center;padding:12px 0;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.8;font-weight:500">
+        <div style="text-align:center;padding:12px 0;font-size:11px;color:rgba(28,26,22,0.6);line-height:1.8;font-weight:500">
           Thrive AI v2.0 · Educational purposes only<br>Not financial advice · Not a licensed financial adviser<br>Your data is encrypted and secure
         </div>
         <div style="height:8px"></div>
@@ -716,9 +798,9 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     <!-- PLANS TAB -->
     <div id="tab-plans" class="tab-content" style="display:none">
       <div style="padding:30px 18px 20px;text-align:center">
-        <div style="font-size:36px;margin-bottom:10px">🌿</div>
-        <div style="font-family:'Lora',serif;font-size:26px;font-style:italic;color:#fff;margin-bottom:8px;line-height:1.3">Your private<br>finance advisor.</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.65);max-width:240px;margin:0 auto;line-height:1.7;font-weight:500">Real insights from your real numbers.</div>
+        <div style="width:48px;height:48px;border-radius:15px;background:var(--color-brand);position:relative;margin:0 auto 14px"><div class="brand-mark"></div></div>
+        <div style="font-family:var(--font-sans);font-size:26px;font-weight:700;letter-spacing:-0.01em;color:var(--color-ink);margin-bottom:8px;line-height:1.25">Your private<br>finance advisor.</div>
+        <div style="font-size:13px;color:var(--color-ink-secondary);max-width:240px;margin:0 auto;line-height:1.7;font-weight:500">Real insights from your real numbers.</div>
       </div>
       <div class="page-pad">
         <div class="plan-card glass">
@@ -733,10 +815,10 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ Up to 2 budget categories</div>
           </div>
         </div>
-        <div class="plan-card" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(24px);border:2px solid rgba(255,255,255,0.4);border-radius:20px;padding:18px;margin-bottom:10px">
+        <div class="plan-card" style="background:rgba(28,26,22,0.18);backdrop-filter:blur(24px);border:2px solid rgba(28,26,22,0.4);border-radius:20px;padding:18px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
             <div class="plan-name">Pro</div>
-            <div style="background:rgba(255,255,255,0.2);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#fff;letter-spacing:0.08em">MOST POPULAR ⭐</div>
+            <div style="background:rgba(28,26,22,0.2);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#1C1A16;letter-spacing:0.08em">MOST POPULAR ⭐</div>
           </div>
           <div class="plan-price">$12<span>/month</span></div>
           <div class="plan-features">
@@ -750,18 +832,18 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
             <div class="plan-feature">✓ Weekly briefing from Thrive AI (launching soon)</div>
             <div class="plan-feature">✓ Subscription audit (launching soon)</div>
           </div>
-          <button class="plan-btn" id="pro-plan-btn" style="background:rgba(255,255,255,0.9);color:#2d5a27" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
+          <button class="plan-btn" id="pro-plan-btn" style="background:#9C7440;color:#fff" onclick="openPaddleCheckout(PADDLE_PRICE_MONTHLY)">Start Free Trial</button>
         </div>
         <div class="plan-card glass">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
             <div class="plan-name">Annual</div>
-            <div style="background:rgba(127,255,127,0.18);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#7fff7f">SAVE 31% 🎉</div>
+            <div style="background:rgba(156,116,64,0.18);padding:2px 9px;border-radius:8px;font-size:9px;font-weight:800;color:#9C7440">SAVE 31% 🎉</div>
           </div>
           <div class="plan-price">$99<span>/year</span></div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.58);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
+          <div style="font-size:12px;color:rgba(28,26,22,0.58);margin-bottom:14px">Everything in Pro. Billed once a year.</div>
           <button class="plan-btn btn-outline" id="annual-plan-btn" onclick="openPaddleCheckout(PADDLE_PRICE_ANNUAL)">Get Annual Plan</button>
         </div>
-        <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
+        <div style="text-align:center;padding:12px 0 4px;font-size:11px;color:rgba(28,26,22,0.4);line-height:1.8">Cancel anytime · No questions asked<br>Your data deleted immediately on request</div>
         <div class="screen-disclaimer">Educational purposes only · Not financial advice · Thrive AI is not a licensed financial adviser</div>
         <div style="height:8px"></div>
       </div>
@@ -773,7 +855,7 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
         <button class="btn-small btn-blue" style="padding:6px 12px;font-size:12px" onclick="closeStatDetail()">← Back</button>
         <div style="margin-left:6px">
           <div class="advisor-name" id="statdetail-title">Detail</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.55)" id="statdetail-sub"></div>
+          <div style="font-size:11px;color:rgba(28,26,22,0.55)" id="statdetail-sub"></div>
         </div>
       </div>
       <div class="page-pad" style="padding-top:10px">
@@ -784,27 +866,27 @@ body{font-family:'Nunito',sans-serif;color:#fff;min-height:100vh;-webkit-font-sm
     </div>
 
     <nav class="bottom-nav">
-      <button class="nav-btn active" id="nav-home" onclick="switchTab('home')"><span class="nav-icon">🏠</span>Home</button>
-      <button class="nav-btn" id="nav-spend" onclick="switchTab('spend')"><span class="nav-icon">📊</span>Spending</button>
-      <button class="nav-btn" id="nav-goals" onclick="switchTab('goals')"><span class="nav-icon">🎯</span>Goals</button>
-      <button class="nav-btn" id="nav-advisor" onclick="switchTab('advisor')"><span class="nav-icon">✨</span>Advisor</button>
-      <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')"><span class="nav-icon">👤</span>Profile</button>
+      <button class="nav-btn active" id="nav-home" onclick="switchTab('home')"><span class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></span>Home</button>
+      <button class="nav-btn" id="nav-spend" onclick="switchTab('spend')"><span class="nav-icon"><i class="ti ti-chart-donut" aria-hidden="true"></i></span>Spending</button>
+      <button class="nav-btn" id="nav-goals" onclick="switchTab('goals')"><span class="nav-icon"><i class="ti ti-target-arrow" aria-hidden="true"></i></span>Goals</button>
+      <button class="nav-btn" id="nav-advisor" onclick="switchTab('advisor')"><span class="nav-icon"><i class="ti ti-sparkles" aria-hidden="true"></i></span>Advisor</button>
+      <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')"><span class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></span>Profile</button>
     </nav>
   </div>
 </div>
 
 <div id="tut-spotlight" class="glass-strong">
-  <div id="tut-spot-title" style="font-family:'Lora',serif;font-size:15px;color:#fff;margin-bottom:6px"></div>
-  <div id="tut-spot-body" style="font-size:12px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:10px"></div>
+  <div id="tut-spot-title" style="font-family:'Lora',serif;font-size:15px;color:#1C1A16;margin-bottom:6px"></div>
+  <div id="tut-spot-body" style="font-size:12px;color:rgba(28,26,22,0.8);line-height:1.6;margin-bottom:10px"></div>
   <div style="display:flex;justify-content:space-between;font-size:11px">
-    <span class="form-link" style="color:rgba(255,255,255,0.55);text-decoration:none" onclick="tutorialBack()">← Back</span>
-    <span class="form-link" style="color:rgba(255,255,255,0.55);text-decoration:none" onclick="tutorialSkipStep()">Skip this →</span>
-    <span class="form-link" style="color:rgba(255,255,255,0.55);text-decoration:none" onclick="closeTutorial()">End tour</span>
+    <span class="form-link" style="color:rgba(28,26,22,0.55);text-decoration:none" onclick="tutorialBack()">← Back</span>
+    <span class="form-link" style="color:rgba(28,26,22,0.55);text-decoration:none" onclick="tutorialSkipStep()">Skip this →</span>
+    <span class="form-link" style="color:rgba(28,26,22,0.55);text-decoration:none" onclick="closeTutorial()">End tour</span>
   </div>
 </div>
 
 <div id="tut-advisor-banner" class="glass-strong" onclick="tutorialNext()" style="display:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:302;max-width:300px;padding:13px 18px;border-radius:16px;cursor:pointer;text-align:center">
-  <div style="font-family:'Lora',serif;font-size:13px;color:#fff;line-height:1.5">✨ Try asking Thrive AI something below, then tap here to continue →</div>
+  <div style="font-family:'Lora',serif;font-size:13px;color:#1C1A16;line-height:1.5">✨ Try asking Thrive AI something below, then tap here to continue →</div>
 </div>
 
 <script>
@@ -814,11 +896,6 @@ const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 let currentUser=null,userTransactions=[],userGoals=[],userBudgets={},monthlyIncome=0;
 
-// Paddle checkout — one switch controls sandbox vs live.
-// TO GO LIVE: set PADDLE_LIVE_MODE to true, then fill in the four 'live_...' /
-// 'pri_...' placeholders below with the real values from your LIVE Paddle
-// dashboard (Developer Tools → Authentication for the token, and your live
-// Thrive AI Pro product's price IDs). Nothing else in this file needs to change.
 const PADDLE_LIVE_MODE = false;
 const PADDLE_TOKEN = PADDLE_LIVE_MODE
   ? 'REPLACE_WITH_LIVE_CLIENT_SIDE_TOKEN'
@@ -833,15 +910,9 @@ if(!PADDLE_LIVE_MODE) Paddle.Environment.set('sandbox');
 Paddle.Initialize({
   token:PADDLE_TOKEN,
   eventCallback:function(data){
-    // When checkout completes, tell the user and refresh their plan status.
-    // The actual is_pro flip happens via the Paddle webhook on the backend —
-    // this just gives immediate feedback in the UI.
     if(data.name==='checkout.completed'){
-      alert('Payment successful! Your account will be upgraded to Pro shortly. 🌱');
+      alert('Payment successful! Your account will be upgraded to Pro shortly.');
       switchTab('home');
-      // The webhook typically takes a few seconds to process. Without this,
-      // isPro stays stale client-side and Pro-only actions (like adding a
-      // 3rd goal) would still be blocked right after a successful purchase.
       setTimeout(()=>{ if(currentUser) loadUserData(); },3000);
     }
   }
@@ -883,21 +954,19 @@ function updatePlansUI(){
   if(btn){
     if(isPro){
       btn.textContent='Cancel Subscription';
-      btn.style.background='rgba(255,100,80,0.22)';
-      btn.style.color='#ff8877';
+      btn.style.background='rgba(197,50,50,0.22)';
+      btn.style.color='#C23B3B';
       btn.onclick=cancelSubscription;
     } else {
       btn.textContent='Start Free Trial';
-      btn.style.background='rgba(255,255,255,0.9)';
-      btn.style.color='#2d5a27';
+      btn.style.background='#9C7440';
+      btn.style.color='#fff';
       btn.onclick=function(){openPaddleCheckout(PADDLE_PRICE_MONTHLY);};
     }
   }
   const annualBtn=document.getElementById('annual-plan-btn');
   if(annualBtn){
     if(isPro){
-      // Prevent starting a second, redundant subscription — we don't currently
-      // support plan-switching, only cancel-and-restart via Plans/Profile.
       annualBtn.textContent='Already Subscribed ✓';
       annualBtn.disabled=true;
       annualBtn.style.opacity='0.5';
@@ -923,7 +992,6 @@ let chatHistory=[];
 let isPro=false,aiQuestionsCount=0,aiQuestionsMonth=null;
 const FREE_AI_LIMIT=3;
 function currentMonthKey(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
-// CURRENCY — single source of truth. USD is the default; the app is no longer hardcoded to it.
 const CURRENCIES={
   USD:{symbol:'$',locale:'en-US',label:'US Dollar (USD)'},
   ZAR:{symbol:'R',locale:'en-ZA',label:'South African Rand (ZAR)'},
@@ -937,16 +1005,9 @@ const CURRENCIES={
 let userCurrency='USD';
 function curCfg(){return CURRENCIES[userCurrency]||CURRENCIES.USD;}
 function curSym(){return curCfg().symbol;}
-// Escapes user-typed text before inserting it into the page. Without this, a transaction
-// or chat message containing "<" or ">" (even accidentally, like "T-shirt <size L>") gets
-// interpreted as an HTML tag and silently breaks the display instead of showing as typed.
 function esc(str){
   return String(str==null?'':str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-// Parses a transaction/goal's date correctly regardless of the user's timezone.
-// t.date is a plain "YYYY-MM-DD" string (no timezone) — parsing it directly with `new Date()`
-// treats it as UTC midnight, which silently shows the WRONG day for anyone west of UTC
-// (e.g. the US/Canada). Appending T00:00:00 forces it to be read as local midnight instead.
 function txDate(t){
   if(t.date)return new Date(t.date+'T00:00:00');
   return new Date(t.created_at);
@@ -957,8 +1018,11 @@ function getBudgetFor(cat){
   const key=Object.keys(userBudgets).find(k=>normCat(k)===target);
   return key?userBudgets[key]:undefined;
 }
-const CAT_ICONS={Food:'🍽️',Housing:'🏠',Transport:'🚗',Entertainment:'🎬',Health:'💊',Subscriptions:'📱',Income:'💰',Salary:'💰',Other:'💳',Shopping:'🛍️',Clothing:'👕',Education:'📚',Gym:'💪',Kids:'👶',Travel:'✈️',Utilities:'⚡',Insurance:'🛡️'};
-function getCatIcon(cat){return CAT_ICONS[cat]||'💳'}
+const CAT_ICONS={Food:'ti-tools-kitchen-2',Housing:'ti-home',Transport:'ti-car',Entertainment:'ti-movie',Health:'ti-pill',Subscriptions:'ti-device-mobile',Income:'ti-briefcase',Salary:'ti-briefcase',Other:'ti-wallet',Shopping:'ti-shopping-bag',Clothing:'ti-shirt',Education:'ti-book',Gym:'ti-barbell',Kids:'ti-baby-carriage',Travel:'ti-plane',Utilities:'ti-bolt',Insurance:'ti-shield'};
+const CAT_COLORS={Food:'#A34545',Housing:'#9C7440',Transport:'#3E6E86',Entertainment:'#6B5A8A',Health:'#9C5470',Subscriptions:'#3E6E86',Income:'#9C7440',Salary:'#9C7440',Other:'#6B665C',Shopping:'#A34545',Clothing:'#6B5A8A',Education:'#3E6E86',Gym:'#A34545',Kids:'#9C5470',Travel:'#3E6E86',Utilities:'#9C7440',Insurance:'#6B665C'};
+function getCatIconName(cat){return CAT_ICONS[cat]||'ti-wallet'}
+function getCatColor(cat){return CAT_COLORS[cat]||'#6B665C'}
+function getCatIcon(cat){return `<i class="ti ${getCatIconName(cat)}" style="color:${getCatColor(cat)}" aria-hidden="true"></i>`}
 function fmt(n){const c=curCfg();return c.symbol+Math.abs(parseFloat(n)||0).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function applyCurrencyLabels(){document.querySelectorAll('.cur-sym').forEach(s=>s.textContent=curSym());}
 function show(id){
@@ -973,9 +1037,6 @@ let tutSuppressAdvance=false;
 function closeModal(id){
   document.getElementById(id).classList.remove('active');
   if(tutSuppressAdvance){
-    // A free-tier cap just blocked this action — the modal is closing as part
-    // of that rejection, not because the tutorial's task was actually completed.
-    // Pause the tutorial cleanly here instead of pretending the step succeeded.
     tutSuppressAdvance=false;
     if(tutActionPending){tutActionPending=null;clearSpotlight();}
     return;
@@ -995,7 +1056,6 @@ function togglePasswordVisibility(id,el){
   else{inp.type='password';el.textContent='👁️';}
 }
 
-// AUTH
 async function doSignup(){
   const name=document.getElementById('signup-name').value.trim();
   const email=document.getElementById('signup-email').value.trim();
@@ -1006,20 +1066,17 @@ async function doSignup(){
   if(pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
   const btn=document.getElementById('signup-btn');btn.textContent='Creating...';btn.disabled=true;
   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name}}});
-  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Create My Account 🌱';btn.disabled=false;return;}
+  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Create my account';btn.disabled=false;return;}
 
   if(data.user && !data.session){
-    // Email confirmation is required and Supabase hasn't issued a session yet.
-    // Any database write right now would silently fail RLS (no auth.uid()),
-    // so stop here and tell the user to confirm their email first.
     show('s-login');
     const loginErr=document.getElementById('login-error');
     loginErr.textContent="Almost there! We've sent a confirmation link to "+email+". Click it, then sign in here.";
     loginErr.style.display='block';
-    loginErr.style.background='rgba(127,255,127,0.2)';
-    loginErr.style.borderColor='rgba(127,255,127,0.3)';
-    loginErr.style.color='#7fff7f';
-    btn.textContent='Create My Account 🌱';btn.disabled=false;
+    loginErr.style.background='rgba(156,116,64,0.2)';
+    loginErr.style.borderColor='rgba(156,116,64,0.3)';
+    loginErr.style.color='#9C7440';
+    btn.textContent='Create my account';btn.disabled=false;
     return;
   }
 
@@ -1028,7 +1085,7 @@ async function doSignup(){
     currentUser=data.user;currentUser.name=name;
     show('s-onboard');
   }
-  btn.textContent='Create My Account 🌱';btn.disabled=false;
+  btn.textContent='Create my account';btn.disabled=false;
 }
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
@@ -1038,7 +1095,7 @@ async function doLogin(){
   if(!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
   const btn=document.getElementById('login-btn');btn.textContent='Signing in...';btn.disabled=true;
   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Sign In 🌿';btn.disabled=false;return;}
+  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Sign in';btn.disabled=false;return;}
   if(data.user){
     currentUser=data.user;
     const {data:profile}=await sb.from('profiles').select('*').eq('id',data.user.id).single();
@@ -1047,7 +1104,7 @@ async function doLogin(){
     show('s-app');switchTab('home');
     maybeStartTutorial();
   }
-  btn.textContent='Sign In 🌿';btn.disabled=false;
+  btn.textContent='Sign in';btn.disabled=false;
 }
 async function forgotPassword(){
   const email=document.getElementById('login-email').value.trim();
@@ -1068,7 +1125,6 @@ async function doLogout(){
   show('s-landing');
 }
 
-// ONBOARDING
 let obIncome=0,obGoalName='',obGoalTarget=0;
 function obNext(step){
   if(step===1){
@@ -1097,7 +1153,6 @@ async function finishOnboard(){
   maybeStartTutorial();
 }
 
-// LOAD DATA
 async function loadUserData(){
   if(!currentUser)return;
   setGreeting(currentUser.name);
@@ -1118,10 +1173,9 @@ async function loadUserData(){
     aiQuestionsMonth=profile.ai_questions_month||null;
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   }
-  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();checkUpcomingBills();loadChatHistory();updatePlansUI();updateLimitIndicators();
+  updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();checkCelebrations();renderRecurring();updateAdvisorStatus();loadChatHistory();updatePlansUI();updateLimitIndicators();
 }
 
-// DASHBOARD
 function updateDashboard(){
   const now=new Date();
   const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
@@ -1131,19 +1185,131 @@ function updateDashboard(){
   const saved=totalIncome-spent;
   const savingsRate=totalIncome>0?Math.round((saved/totalIncome)*100):0;
   const netWorth=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
-  const badgeIcon=savingsRate<0?'↓':'↑';
-  const badgeTone=savingsRate>20?'Great job! 🎉':savingsRate>=0?'Keep going! 💪':"You're spending more than you earn — let's fix this 💛";
+  const badgeTone=savingsRate>20?'Great month so far':savingsRate>=0?'Keep going':"Spending more than you earn — let's fix this";
   document.getElementById('net-worth-display').textContent=fmt(netWorth);
-  document.getElementById('savings-badge').textContent=totalIncome>0?`${badgeIcon} ${savingsRate}% savings rate · ${badgeTone}`:'Add transactions to track progress';
-  document.getElementById('stat-income').textContent=fmt(totalIncome);
-  document.getElementById('stat-spent').textContent=fmt(spent);
-  document.getElementById('stat-saved').textContent=fmt(saved);
-  document.getElementById('stat-count').textContent=userTransactions.length;
-  updateSpendingChart();
-  updateHomeInsights(income,spent,saved,savingsRate);
-  const recent=userTransactions.slice(0,5);
-  const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
-  document.getElementById('home-transactions').innerHTML=rHTML||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>';
+  document.getElementById('savings-badge').textContent=totalIncome>0?`${savingsRate}% savings rate · ${badgeTone}`:'Add transactions to track progress';
+  document.getElementById('available-to-spend-display').textContent=fmt(computeAvailableToSpend());
+  renderHeroSparkline();
+  renderHomeBrief();
+  renderHomeBillsCompact();
+  renderSavingsProgressHome();
+  const recent=userTransactions.slice(0,4);
+  const rHTML=recent.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount" style="color:${t.amount>0?'var(--color-positive)':'var(--color-ink)'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div></div>`).join('');
+  document.getElementById('home-transactions').innerHTML=rHTML||'<div class="tx-row"><div style="font-size:12px;color:var(--color-ink-muted);padding:6px 0;width:100%;text-align:center">No transactions yet</div></div>';
+}
+
+// Total balance minus bills due in the next 7 days. Deliberately does NOT
+// subtract remaining budget too — that would double-count against Spending's
+// own budget-vs-spent view. This is a spendable-cash number, not a budget one.
+function computeAvailableToSpend(){
+  const balance=userTransactions.reduce((a,b)=>a+parseFloat(b.amount),0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const in7=new Date(today.getTime()+7*86400000);
+  const upcoming=userRecurring.filter(r=>r.active!==false&&r.amount<0).reduce((sum,r)=>{
+    const due=new Date(r.next_date+'T00:00:00');
+    return (due>=today&&due<=in7)?sum+Math.abs(parseFloat(r.amount)):sum;
+  },0);
+  return balance-upcoming;
+}
+
+// Today's AI Brief — templated from data already loaded on the page, not a
+// live model call. Same "instant answer layer" reasoning as the rest of the
+// app: most day-to-day questions are a data query wearing natural language,
+// not something that needs to burn one of the metered AI questions.
+function renderHomeBrief(){
+  const el=document.getElementById('home-brief-body');
+  if(!el)return;
+  const lines=[];
+  const today=new Date();today.setHours(0,0,0,0);
+
+  const dueSoon=userRecurring.filter(r=>r.active!==false).map(r=>({...r,due:new Date(r.next_date+'T00:00:00')})).filter(r=>{const d=Math.round((r.due-today)/86400000);return d>=0&&d<=3;}).sort((a,b)=>a.due-b.due)[0];
+  if(dueSoon){
+    const d=Math.round((dueSoon.due-today)/86400000);
+    const when=d===0?'today':d===1?'tomorrow':`in ${d} days`;
+    lines.push(`${esc(dueSoon.name)} is due ${when} — ${fmt(Math.abs(dueSoon.amount))}.`);
+  }
+
+  const dayOfMonth=today.getDate();
+  const spentThisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear()&&t.amount<0;}).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+  if(dayOfMonth>1&&spentThisMonth>0){
+    const avgDaily=spentThisMonth/dayOfMonth;
+    const yest=new Date(today.getTime()-86400000);
+    const spentYest=userTransactions.filter(t=>{const d=txDate(t);return d.getFullYear()===yest.getFullYear()&&d.getMonth()===yest.getMonth()&&d.getDate()===yest.getDate()&&t.amount<0;}).reduce((a,b)=>a+Math.abs(parseFloat(b.amount)),0);
+    const diff=avgDaily-spentYest;
+    if(Math.abs(diff)>1)lines.push(diff>0?`You spent ${fmt(diff)} less than usual yesterday.`:`You spent ${fmt(Math.abs(diff))} more than usual yesterday.`);
+  }
+
+  if(isPro){
+    const byCat={};
+    userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
+    const over=Object.entries(byCat).find(([cat,amt])=>{const b=getBudgetFor(cat);return b&&amt>b;});
+    if(over)lines.push(`${esc(over[0])} is over budget by ${fmt(over[1]-getBudgetFor(over[0]))}.`);
+  }
+
+  const income=monthlyIncome>0?monthlyIncome:userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear()&&t.amount>0;}).reduce((a,b)=>a+parseFloat(b.amount),0);
+  if(income>0){
+    const rate=Math.round(((income-spentThisMonth)/income)*100);
+    if(rate>=0)lines.push(`You're on track to save ${rate}% of your income this month.`);
+  }
+
+  if(lines.length===0){
+    el.innerHTML=`<div class="brief-empty" onclick="openModal('modal-add-tx')">Add a few transactions and I'll start giving you a daily brief here →</div>`;
+    return;
+  }
+  el.innerHTML=lines.slice(0,4).map(l=>`<div class="brief-line">${l}</div>`).join('');
+}
+
+function renderHomeBillsCompact(){
+  const wrap=document.getElementById('home-bills-compact');
+  if(!wrap)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=userRecurring.filter(r=>r.active!==false).map(r=>({...r,due:new Date(r.next_date+'T00:00:00')})).sort((a,b)=>a.due-b.due).slice(0,3);
+  if(!upcoming.length){wrap.innerHTML=`<div class="empty-note" onclick="renderRecurring();openModal('modal-recurring')">Add a recurring bill to track it here ›</div>`;return;}
+  wrap.innerHTML=upcoming.map(r=>{
+    const d=Math.round((r.due-today)/86400000);
+    const when=d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':r.due.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<div class="bill-row"><span class="bill-name">${esc(r.name)}</span><span class="bill-when" style="${d<0?'color:var(--color-negative)':''}">${when}</span><span class="bill-amt">${fmt(Math.abs(r.amount))}</span></div>`;
+  }).join('');
+}
+
+// Single nearest-to-completion goal — the full list still lives in Goals.
+function renderSavingsProgressHome(){
+  const wrap=document.getElementById('home-savings-progress');
+  if(!wrap)return;
+  if(!userGoals.length){
+    wrap.innerHTML=`<div class="section-label">Savings progress</div><div class="empty-note" onclick="openModal('modal-add-goal')">No goals yet — set one to start tracking ›</div>`;
+    return;
+  }
+  const goal=[...userGoals].sort((a,b)=>(parseFloat(b.current)/parseFloat(b.target))-(parseFloat(a.current)/parseFloat(a.target)))[0];
+  const pct=Math.min(Math.round((parseFloat(goal.current)/parseFloat(goal.target))*100),100);
+  const R=24,C=2*Math.PI*R;
+  const dash=(Math.min(pct,100)/100*C).toFixed(1);
+  wrap.innerHTML=`<div class="section-label">Savings progress</div><div class="savings-row" onclick="switchTab('goals')">
+    <svg width="60" height="60" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="${R}" fill="none" stroke="var(--color-border)" stroke-width="4"/><circle cx="28" cy="28" r="${R}" fill="none" stroke="var(--color-positive)" stroke-width="4" stroke-dasharray="${dash} ${C.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 28 28)"/></svg>
+    <div style="flex:1;min-width:0"><div class="cat-name">${esc(goal.name)}</div><div class="tx-date">${fmt(goal.current)} of ${fmt(goal.target)}</div></div>
+    <div class="goal-pct" style="color:var(--color-positive)">${pct}%</div>
+  </div>`;
+}
+
+function renderHeroSparkline(){
+  const el=document.getElementById('hero-sparkline');
+  if(!el)return;
+  if(userTransactions.length<2){el.innerHTML='';return;}
+  const sorted=[...userTransactions].sort((a,b)=>txDate(a)-txDate(b));
+  const now=new Date();
+  const points=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i,23,59,59);
+    const total=sorted.filter(t=>txDate(t)<=d).reduce((a,b)=>a+parseFloat(b.amount),0);
+    points.push(total);
+  }
+  const min=Math.min(...points),max=Math.max(...points);
+  const range=(max-min)||1;
+  const w=60,h=28,step=w/(points.length-1);
+  const coords=points.map((p,i)=>`${(i*step).toFixed(1)},${(h-((p-min)/range)*h).toFixed(1)}`).join(' ');
+  const trendUp=points[points.length-1]>=points[0];
+  // Green/red carry the up-down signal here — bronze is reserved for brand & interactive, never for good/bad.
+  el.innerHTML=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${coords}" fill="none" stroke="${trendUp?'var(--color-positive)':'var(--color-negative)'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 let chartRange='daily';
@@ -1157,7 +1323,6 @@ function buildChartData(){
   const now=new Date();
   const data=[];
   if(chartRange==='daily'){
-    // Last 7 days
     const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     for(let i=6;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
@@ -1167,7 +1332,6 @@ function buildChartData(){
       data.push({label:days[d.getDay()],income:inc,spent:sp});
     }
   } else if(chartRange==='weekly'){
-    // Last 6 weeks (Mon-anchored buckets)
     for(let i=5;i>=0;i--){
       const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7));
       const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-(i*7)-6);
@@ -1177,7 +1341,6 @@ function buildChartData(){
       data.push({label:i===0?'This wk':`${start.getDate()}/${start.getMonth()+1}`,income:inc,spent:sp});
     }
   } else {
-    // Last 6 months
     const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     for(let i=5;i>=0;i--){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
@@ -1195,7 +1358,7 @@ function updateSpendingChart(){
   const data=buildChartData();
   const maxVal=Math.max(...data.map(d=>Math.max(d.income,d.spent)),1);
   const barW=chartRange==='daily'?10:12;
-  const chartHTML=data.map(d=>`<div class="chart-bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;height:65px"><div style="width:${barW}px;background:rgba(127,255,127,0.45);border-radius:3px 3px 0 0;height:${Math.max((d.income/maxVal)*65,2)}px"></div><div style="width:${barW}px;background:rgba(255,150,80,0.5);border-radius:3px 3px 0 0;height:${Math.max((d.spent/maxVal)*65,2)}px"></div></div><div class="chart-label">${d.label}</div></div>`).join('');
+  const chartHTML=data.map(d=>`<div class="chart-bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;height:65px"><div style="width:${barW}px;background:rgba(156,116,64,0.45);border-radius:3px 3px 0 0;height:${Math.max((d.income/maxVal)*65,2)}px"></div><div style="width:${barW}px;background:rgba(255,150,80,0.5);border-radius:3px 3px 0 0;height:${Math.max((d.spent/maxVal)*65,2)}px"></div></div><div class="chart-label">${d.label}</div></div>`).join('');
   document.getElementById('spending-chart').innerHTML=chartHTML;
   updateSpendingForecast();
 }
@@ -1212,7 +1375,6 @@ function updateSpendingForecast(){
   el.textContent=`📈 At this pace, you'll spend about ${fmt(projected)} this month`;
 }
 
-// CHART FULL BREAKDOWN — own Daily/Weekly/Monthly switcher inside the detail view
 let detailRange='daily';
 function buildChartPeriods(range){
   range=range||detailRange;
@@ -1247,7 +1409,7 @@ function buildChartPeriods(range){
 }
 
 function openChartDetail(){
-  detailRange=chartRange; // start on whatever the home chart is showing
+  detailRange=chartRange;
   renderChartDetail();
   switchTab('statdetail');
   document.getElementById('nav-home').classList.add('active');
@@ -1270,7 +1432,6 @@ function renderChartDetail(){
   const avgSpent=periods.length>0?grandSpent/periods.length:0;
   const biggest=periods.reduce((max,p)=>p.spent>max.spent?p:max,{spent:0,label:'—'});
 
-  // Range switcher inside the detail view
   let content=`<div style="display:flex;gap:6px;margin-bottom:12px">
     <button class="chart-tab ${detailRange==='daily'?'active':''}" onclick="setDetailRange('daily')">Daily</button>
     <button class="chart-tab ${detailRange==='weekly'?'active':''}" onclick="setDetailRange('weekly')">Weekly</button>
@@ -1278,23 +1439,23 @@ function renderChartDetail(){
   </div>`;
 
   content+=`<div class="glass" style="padding:14px;margin-bottom:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Spent</div><div style="font-size:18px;font-weight:800">${fmt(grandSpent)}</div></div>
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(grandIncome)}</div></div>
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / ${unit.slice(0,-1)}</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
-    <div><div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.spent>0?`${biggest.label} · ${fmt(biggest.spent)}`:'—'}</div></div>
+    <div><div style="font-size:10.5px;color:#1C1A16;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Spent</div><div style="font-size:18px;font-weight:800">${fmt(grandSpent)}</div></div>
+    <div><div style="font-size:10.5px;color:#1C1A16;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Total Income</div><div style="font-size:18px;font-weight:800;color:#9C7440">${fmt(grandIncome)}</div></div>
+    <div><div style="font-size:10.5px;color:#1C1A16;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Avg / ${unit.slice(0,-1)}</div><div style="font-size:15px;font-weight:700">${fmt(avgSpent)}</div></div>
+    <div><div style="font-size:10.5px;color:#1C1A16;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Biggest Spend</div><div style="font-size:13px;font-weight:700">${biggest.spent>0?`${biggest.label} · ${fmt(biggest.spent)}`:'—'}</div></div>
   </div></div>`;
 
   content+=periods.slice().reverse().map(p=>{
     const net=p.income-p.spent;
     const txHtml=p.txns.length>0
-      ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
-      : `<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:6px 2px">No activity this ${detailRange==='daily'?'day':detailRange==='weekly'?'week':'month'}</div>`;
+      ? `<div class="tx-card glass" style="margin-bottom:0;margin-top:8px">`+p.txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#9C7440':'#1C1A16'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`
+      : `<div style="font-size:12px;color:rgba(28,26,22,0.4);padding:6px 2px">No activity this ${detailRange==='daily'?'day':detailRange==='weekly'?'week':'month'}</div>`;
     return `<div class="glass" style="padding:13px 15px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="font-weight:800;font-size:14px">${p.label}</div>
-        <div style="text-align:right"><div style="font-size:11px;color:#7fff7f;font-weight:700">+${fmt(p.income)} in</div><div style="font-size:11px;color:rgba(255,150,80,0.95);font-weight:700">−${fmt(p.spent)} out</div></div>
+        <div style="text-align:right"><div style="font-size:11px;color:#9C7440;font-weight:700">+${fmt(p.income)} in</div><div style="font-size:11px;color:rgba(255,150,80,0.95);font-weight:700">−${fmt(p.spent)} out</div></div>
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px">Net: <span style="color:${net>=0?'#7fff7f':'#ff8877'};font-weight:800">${net>=0?'+':'−'}${fmt(net)}</span></div>
+      <div style="font-size:11px;color:rgba(28,26,22,0.55);margin-top:4px">Net: <span style="color:${net>=0?'#9C7440':'#C23B3B'};font-weight:800">${net>=0?'+':'−'}${fmt(net)}</span></div>
       ${txHtml}
     </div>`;
   }).join('');
@@ -1309,19 +1470,15 @@ function updateHomeInsights(income,spent,saved,savingsRate){
   const byCat={};
   const now=new Date();
   userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&t.amount<0;}).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
-  // Over-budget / near-budget insight cards are part of the same "budget overspend
-  // alerts" Pro perk as the banner on Home — without this check, free users were
-  // still getting the exact same proactive warning through this second surface.
   if(isPro){
-    Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,100,80,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${esc(cat)} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${esc(cat)} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(255,200,50,.8)"><div class="insight-title">📊 ${esc(cat)} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${esc(cat)} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
+    Object.entries(byCat).forEach(([cat,amt])=>{const budget=getBudgetFor(cat);if(budget&&amt>budget){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(197,50,50,.8)" onclick="switchTab('advisor')"><div class="insight-title">⚠️ ${esc(cat)} Over Budget</div><div class="insight-body">You've spent ${fmt(amt)} on ${esc(cat)} — ${fmt(amt-budget)} over your ${fmt(budget)} budget.</div><div class="insight-cta">Discuss with Thrive AI →</div></div>`);}else if(budget&&amt/budget>0.8){insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(184,134,11,.8)"><div class="insight-title">📊 ${esc(cat)} At 80%</div><div class="insight-body">You've used ${Math.round((amt/budget)*100)}% of your ${esc(cat)} budget. ${fmt(budget-amt)} remaining.</div></div>`);}});
   }
-  if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
+  if(savingsRate>=30)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(156,116,64,.8)"><div class="insight-title">🎉 Excellent Savings Rate!</div><div class="insight-body">A ${savingsRate}% savings rate is exceptional. Most people save less than 5%. You're building real financial freedom.</div></div>`);
   if(userGoals.length>0){const near=userGoals.find(g=>parseFloat(g.current)/parseFloat(g.target)>=0.9);if(near)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(100,200,255,.8)"><div class="insight-title">🏆 Almost There!</div><div class="insight-body">Your "${near.name}" goal is ${Math.round((parseFloat(near.current)/parseFloat(near.target))*100)}% complete. Just ${fmt(parseFloat(near.target)-parseFloat(near.current))} to go!</div></div>`);}
-  if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(127,255,127,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
+  if(insights.length===0)insights.push(`<div class="insight-card glass animate-in" style="border-left-color:rgba(156,116,64,.7)" onclick="openModal('modal-add-tx')"><div class="insight-title">💡 Getting Started</div><div class="insight-body">Add transactions to see personalised insights from Thrive AI.</div><div class="insight-cta">ADD TRANSACTION →</div></div>`);
   document.getElementById('home-insights').innerHTML=insights.slice(0,3).join('');
 }
 
-// BILL REMINDERS — in-app banner for recurring items due within the next 3 days
 function checkUpcomingBills(){
   const el=document.getElementById('bill-reminders');
   if(!el)return;
@@ -1344,8 +1501,6 @@ function checkUpcomingBills(){
 function checkBudgetAlerts(){
   const el=document.getElementById('budget-alerts');
   if(!el)return;
-  // Budget overspend alerts are a Pro perk — free users can still set budgets
-  // and see their progress bars, but the proactive over-budget banner is Pro-only.
   if(!isPro){el.innerHTML='';return;}
   const now=new Date();
   const alerts=[];
@@ -1355,7 +1510,6 @@ function checkBudgetAlerts(){
   document.getElementById('budget-alerts').innerHTML=alerts.join('');
 }
 
-// MILESTONE CELEBRATIONS — dismissable, persist per user via localStorage
 function dismissedKey(){return 'thrive_dismissed_'+(currentUser?currentUser.id:'anon');}
 function getDismissed(){
   try{return JSON.parse(localStorage.getItem(dismissedKey()))||[];}catch(e){return [];}
@@ -1371,7 +1525,6 @@ function checkCelebrations(){
   const dismissed=getDismissed();
   const cels=[];
 
-  // Goal milestones: 50 / 75 / 100
   userGoals.forEach(g=>{
     const pct=Math.round((parseFloat(g.current)/parseFloat(g.target))*100);
     let tier=null;
@@ -1387,7 +1540,6 @@ function checkCelebrations(){
     }
   });
 
-  // Strong savings month
   const now=new Date();
   const thisMonth=userTransactions.filter(t=>{const d=txDate(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const income=monthlyIncome>0?monthlyIncome:thisMonth.filter(t=>t.amount>0).reduce((a,b)=>a+parseFloat(b.amount),0);
@@ -1400,7 +1552,6 @@ function checkCelebrations(){
     }
   }
 
-  // Under budget across all set categories (only if budgets exist and at least one transaction)
   if(Object.keys(userBudgets).length>0 && thisMonth.length>0){
     const byCat={};
     thisMonth.filter(t=>t.amount<0).forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
@@ -1419,7 +1570,6 @@ function checkCelebrations(){
   el.innerHTML=cels.slice(0,2).map(c=>`<div class="celebrate-banner"><button class="celebrate-close" onclick="dismissCelebration('${c.id}')">×</button><div class="celebrate-title">${c.title}</div><div class="celebrate-body">${c.body}</div></div>`).join('');
 }
 
-// SPENDING
 let filteredTxns=null;
 function filterTransactions(){
   const q=document.getElementById('tx-search').value.toLowerCase();
@@ -1436,17 +1586,28 @@ function updateSpending(){
   const byCat={};
   thisMonth.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
   catCardCategories=[];
-  const catHTML=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt],idx)=>{catCardCategories[idx]=cat;const budget=getBudgetFor(cat)||0;const pct=budget>0?Math.min((amt/budget)*100,100):0;const over=budget>0&&amt>budget;const near=budget>0&&!over&&amt/budget>=0.8;return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${esc(cat)}${over?'<span class="badge" style="background:rgba(255,100,80,.2);color:#ff8877">OVER</span>':near?'<span class="badge" style="background:rgba(255,200,50,.2);color:#ffd84f">80%</span>':''}</div></div><div style="text-align:right"><div class="cat-amount" style="color:${over?'#ff8877':'#fff'}">${fmt(amt)}</div><div class="cat-budget">${budget>0?`of ${fmt(budget)}`:'No budget'}</div>${over?`<div style="font-size:10px;color:#ff8877;font-weight:800">${fmt(amt-budget)} over</div>`:''}</div></div>${budget>0?`<div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${over?'rgba(255,120,100,.7)':near?'rgba(255,200,50,.6)':'rgba(127,255,127,.6)'}"></div></div><div style="text-align:right;margin-top:5px"><span class="form-link" style="font-size:10px;color:rgba(255,255,255,0.45);text-decoration:none" onclick="deleteBudget(${idx})">Remove budget</span></div>`:''}</div>`;}).join(''):'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(255,255,255,0.45)">Add transactions to see categories</div>';
-  document.getElementById('categories-list').innerHTML=catHTML;
+  const R2=15.5,C2=2*Math.PI*R2;
+  const rows=Object.keys(byCat).length>0?Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,amt],idx)=>{
+    catCardCategories[idx]=cat;
+    const budget=getBudgetFor(cat)||0;
+    const pct=budget>0?Math.min(amt/budget,1):0;
+    const over=budget>0&&amt>budget;
+    const near=budget>0&&!over&&amt/budget>=0.8;
+    const ringColor=over?'#A34545':near?'#9C7440':getCatColor(cat);
+    const dash=budget>0?(pct*C2).toFixed(1):C2.toFixed(1);
+    const statusText=budget>0?(over?`${fmt(amt-budget)} over budget`:`${fmt(budget-amt)} left of budget`):'No budget set';
+    const removeLink=budget>0?`<span class="form-link" style="font-size:10.5px;color:#1C1A16;text-decoration:none;display:block;margin-top:2px" onclick="deleteBudget(${idx})">Remove budget</span>`:'';
+    return `<div class="tx-row"><div class="ring-icon" style="flex-shrink:0"><svg width="34" height="34" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${R2}" fill="none" stroke="rgba(28,26,22,0.08)" stroke-width="2"></circle><circle cx="18" cy="18" r="${R2}" fill="none" stroke="${ringColor}" stroke-width="2" stroke-dasharray="${dash} ${C2.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 18 18)"></circle></svg>${getCatIcon(cat)}</div><div style="flex:1;min-width:0"><div class="cat-name">${esc(cat)}</div><div style="font-size:9px;color:${over?'#A34545':'rgba(28,26,22,0.45)'};margin-top:1px">${statusText}</div></div><div style="text-align:right;flex-shrink:0"><div class="cat-amount" style="color:${over?'#A34545':'#1C1A16'}">${fmt(amt)}</div>${removeLink}</div></div>`;
+  }).join(''):'';
+  document.getElementById('categories-list').innerHTML=rows?`<div class="tx-card glass">${rows}</div>`:'<div class="glass" style="padding:14px;text-align:center;font-size:12px;color:rgba(28,26,22,0.45)">Add transactions to see categories</div>';
   renderAllTransactions();
 }
 function renderAllTransactions(){
   const txns=filteredTxns||userTransactions;
-  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}${t.recurring_id?' <span title="Recurring" style="font-size:10px">🔁</span>':''}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
-  document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(255,255,255,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
+  const html=txns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}${t.recurring_id?' <span title="Recurring" style="font-size:10px">🔁</span>':''}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div style="display:flex;align-items:center;gap:5px"><div class="tx-amount" style="color:${t.amount>0?'#9C7440':'#1C1A16'};font-size:12px">${t.amount>0?'+':'−'}${fmt(t.amount)}</div><button class="btn-small btn-blue" style="padding:3px 7px;font-size:9px" onclick="openEditTx('${t.id}')">✎</button><button class="btn-small btn-red" style="padding:3px 7px;font-size:9px" onclick="deleteTx('${t.id}')">✕</button></div></div>`).join('');
+  document.getElementById('all-transactions').innerHTML=html||'<div class="tx-row"><div style="font-size:12px;color:rgba(28,26,22,0.45);padding:6px 0;width:100%;text-align:center">No transactions found</div></div>';
 }
 
-// ADD / EDIT / DELETE TRANSACTIONS
 async function addTransaction(){
   const name=document.getElementById('tx-name').value.trim();
   const amount=parseFloat(document.getElementById('tx-amount').value);
@@ -1461,15 +1622,11 @@ async function addTransaction(){
   closeModal('modal-add-tx');await loadUserData();
 }
 
-// RECURRING TRANSACTIONS
 function advanceDate(dateStr,frequency){
   const d=new Date(dateStr+'T00:00:00');
   if(frequency==='weekly'){
     d.setDate(d.getDate()+7);
   } else {
-    // Naive d.setMonth(d.getMonth()+1) breaks for month-end dates: Jan 31 + 1 month
-    // overflows into "Feb 31", which doesn't exist, and JS silently rolls it to Mar 3 —
-    // a jarring, wrong-looking jump. Clamp to the target month's actual last day instead.
     const origDay=d.getDate();
     d.setDate(1);
     d.setMonth(d.getMonth()+1);
@@ -1481,7 +1638,7 @@ function advanceDate(dateStr,frequency){
 let recurringInProgress=false;
 async function processRecurring(){
   if(!currentUser)return;
-  if(recurringInProgress)return; // avoid double-creating transactions if this gets triggered twice in quick succession
+  if(recurringInProgress)return;
   recurringInProgress=true;
   try{
     const {data:rules}=await sb.from('recurring').select('*').eq('user_id',currentUser.id).eq('active',true);
@@ -1490,7 +1647,6 @@ async function processRecurring(){
     for(const r of rules){
       let next=r.next_date;
       let guard=0;
-      // Create an occurrence for every due date up to today (catches missed months), capped for safety
       while(next<=today && guard<60){
         await sb.from('transactions').insert({user_id:currentUser.id,name:r.name,amount:r.amount,category:r.category,date:next,currency:r.currency||userCurrency,recurring_id:r.id});
         next=advanceDate(next,r.frequency);
@@ -1560,7 +1716,7 @@ function renderRecurring(){
   if(!box)return;
   const clearBtn=document.getElementById('recurring-clear-all-btn');
   if(!userRecurring.length){
-    box.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';
+    box.innerHTML='<div style="font-size:12px;color:rgba(28,26,22,0.5);text-align:center;padding:12px 0">No recurring items yet.</div>';
     if(clearBtn)clearBtn.style.display='none';
     updateLimitIndicators();
     return;
@@ -1570,11 +1726,11 @@ function renderRecurring(){
     const sign=r.amount<0?'−':'+';
     const c=CURRENCIES[r.currency]||curCfg();
     const amt=c.symbol+Math.abs(parseFloat(r.amount)).toLocaleString(c.locale,{minimumFractionDigits:2,maximumFractionDigits:2});
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
-      <div><div style="font-size:13px;font-weight:600;color:#fff">${getCatIcon(r.category)} ${esc(r.name)}</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:12px;margin-bottom:7px;background:rgba(28,26,22,0.07);border:1px solid rgba(28,26,22,0.12)">
+      <div><div style="font-size:13px;font-weight:600;color:#1C1A16">${getCatIcon(r.category)} ${esc(r.name)}</div><div style="font-size:11px;color:rgba(28,26,22,0.5)">${sign}${amt} · ${r.frequency} · next ${r.next_date}</div></div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button onclick="openEditRecurring('${r.id}')" style="background:rgba(100,180,255,0.18);border:none;color:#88ccff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px">✎</button>
-        <button onclick="deleteRecurring('${r.id}')" style="background:rgba(255,100,80,0.18);border:none;color:#ff8877;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
+        <button onclick="openEditRecurring('${r.id}')" style="background:rgba(47,111,224,0.18);border:none;color:#2F6FE0;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px">✎</button>
+        <button onclick="deleteRecurring('${r.id}')" style="background:rgba(197,50,50,0.18);border:none;color:#C23B3B;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px">×</button>
       </div>
     </div>`;
   }).join('');
@@ -1636,9 +1792,6 @@ async function saveEditTransaction(){
   const date=document.getElementById('edit-tx-date').value;
   const orig=userTransactions.find(x=>x.id===id);
   if(!orig)return;
-  // Guard against blank/invalid amount — without this, a cleared amount field
-  // saves NaN to the database, which then poisons every dashboard total that
-  // sums this transaction (Net Balance, Income, Spent, etc. all show $NaN).
   if(!name||!amount||isNaN(amount)){alert('Please fill in a valid name and amount.');return;}
   const finalAmount=orig.amount<0?-Math.abs(amount):Math.abs(amount);
   await sb.from('transactions').update({name,amount:finalAmount,category,date:date||orig.date}).eq('id',id);
@@ -1646,15 +1799,17 @@ async function saveEditTransaction(){
 }
 async function deleteTx(id){if(!confirm('Delete this transaction?'))return;await sb.from('transactions').delete().eq('id',id);await loadUserData();}
 
-// GOALS
 function updateGoals(){
+  const R3=15.5,C3=2*Math.PI*R3;
   const html=userGoals.map(g=>{
     const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
     const left=parseFloat(g.target)-parseFloat(g.current);
     const isComplete=pct>=100;
-    return `<div class="goal-card glass"><div class="goal-header"><div style="display:flex;align-items:center;gap:10px"><div class="goal-icon-box">${isComplete?'🏆':'🎯'}</div><div><div class="goal-name">${esc(g.name)}${isComplete?' ✓':''}</div><div class="goal-date">${g.deadline?new Date(g.deadline+'T00:00:00').toLocaleDateString():'No deadline'}</div></div></div><div style="text-align:right"><div class="goal-pct" style="color:${isComplete?'#7fff7f':'#fff'}">${pct}%</div></div></div><div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${isComplete?'linear-gradient(90deg,#7fff7f,#4dff4d)':'linear-gradient(90deg,rgba(255,255,255,0.5),#fff)'}"></div></div><div class="goal-nums"><span>${fmt(g.current)} saved</span><span>${isComplete?'Goal complete! 🎉':fmt(left)+' left of '+fmt(g.target)}</span></div><div class="goal-actions"><button class="btn-small btn-green" onclick="openContributeGoal('${g.id}')">+ Add Savings</button><button class="btn-small btn-blue" style="margin-left:4px" onclick="switchTab('advisor')">Ask Thrive AI</button><button class="btn-small btn-red" style="margin-left:4px" onclick="deleteGoal('${g.id}')">✕</button></div></div>`;
+    const dash=(Math.min(pct,100)/100*C3).toFixed(1);
+    const ringColor=isComplete?'#9C7440':'#3E6E86';
+    return `<div class="goal-card glass"><div style="display:flex;align-items:center;gap:12px"><div class="ring-icon" style="flex-shrink:0"><svg width="44" height="44" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${R3}" fill="none" stroke="rgba(28,26,22,0.08)" stroke-width="2.5"></circle><circle cx="18" cy="18" r="${R3}" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-dasharray="${dash} ${C3.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 18 18)"></circle></svg><i class="ti ${isComplete?'ti-trophy':'ti-target-arrow'}" style="color:${ringColor};font-size:15px" aria-hidden="true"></i></div><div style="flex:1;min-width:0"><div class="goal-name">${esc(g.name)}${isComplete?' ✓':''}</div><div class="goal-date" style="margin-top:2px">${fmt(g.current)} of ${fmt(g.target)}</div></div><div class="goal-pct" style="color:${ringColor}">${pct}%</div></div><div class="goal-nums" style="margin-top:10px;margin-bottom:0"><span>${isComplete?'Goal complete! 🎉':fmt(left)+' left'}</span><span>${g.deadline?new Date(g.deadline+'T00:00:00').toLocaleDateString():'No deadline'}</span></div><div class="goal-actions" style="margin-top:10px"><button class="btn-small btn-green" onclick="openContributeGoal('${g.id}')">+ Add Savings</button><button class="btn-small btn-blue" style="margin-left:4px" onclick="switchTab('advisor')">Ask Thrive AI</button><button class="btn-small btn-red" style="margin-left:4px" onclick="deleteGoal('${g.id}')">✕</button></div></div>`;
   }).join('');
-  document.getElementById('goals-list').innerHTML=html||`<div class="glass" style="padding:18px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎯</div><div style="font-size:13px;color:rgba(255,255,255,0.62);margin-bottom:12px">No goals yet. Set your first financial goal!</div><button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button></div>`;
+  document.getElementById('goals-list').innerHTML=html||`<div class="glass" style="padding:18px;text-align:center"><div style="font-size:30px;margin-bottom:8px">🎯</div><div style="font-size:13px;color:rgba(28,26,22,0.62);margin-bottom:12px">No goals yet. Set your first financial goal!</div><button class="btn-small btn-green" onclick="openModal('modal-add-goal')" style="margin:0 auto">+ Add First Goal</button></div>`;
 }
 async function addGoal(){
   const name=document.getElementById('goal-name').value.trim();
@@ -1662,9 +1817,6 @@ async function addGoal(){
   const current=Math.abs(parseFloat(document.getElementById('goal-current').value))||0;
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target){alert('Please fill in goal name and target amount.');return;}
-  // The Free plan allows 2 active goals — enough to actually use the feature,
-  // but a real financial life (e.g. emergency fund + a big purchase) hits the
-  // wall quickly, matching the same pattern used for the AI question limit.
   if(!isPro && userGoals.length>=2){
     alert("Free accounts can have up to 2 active goals. Upgrade to Pro for unlimited goals.");
     tutSuppressAdvance=true;
@@ -1699,11 +1851,7 @@ async function saveBudget(){
   const amount=Math.abs(parseFloat(document.getElementById('budget-amount').value));
   if(!typedCategory){alert('Please enter a category name.');return;}
   if(!amount){alert('Please enter a budget amount.');return;}
-  // If a budget already exists for this category under different casing (e.g. "food" vs "Food"),
-  // update that existing row instead of silently creating a confusing duplicate.
   const existingKey=Object.keys(userBudgets).find(k=>normCat(k)===normCat(typedCategory));
-  // Only block on the free-tier cap if this would actually create a NEW category —
-  // editing an existing budget's amount should always be allowed.
   if(!isPro && !existingKey && Object.keys(userBudgets).length>=2){
     alert("Free accounts can have up to 2 budget categories. Upgrade to Pro for unlimited budgets.");
     tutSuppressAdvance=true;
@@ -1726,7 +1874,6 @@ async function deleteBudget(idx){
   await loadUserData();
 }
 
-// PROFILE
 function updateProfile(){
   document.getElementById('profile-name-display').textContent=currentUser.name||currentUser.email?.split('@')[0]||'User';
   document.getElementById('profile-email-display').textContent=currentUser.email||'';
@@ -1741,7 +1888,7 @@ function renderCurrencyOptions(){
   if(!box)return;
   box.innerHTML=Object.keys(CURRENCIES).map(code=>{
     const active=code===userCurrency;
-    return `<div onclick="setCurrency('${code}')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;margin-bottom:7px;cursor:pointer;background:${active?'rgba(127,255,127,0.16)':'rgba(255,255,255,0.07)'};border:1px solid ${active?'rgba(127,255,127,0.4)':'rgba(255,255,255,0.12)'}"><span style="font-size:13px;font-weight:600;color:#fff">${CURRENCIES[code].symbol} &nbsp; ${CURRENCIES[code].label}</span>${active?'<span style="color:#7fff7f;font-size:14px">✓</span>':''}</div>`;
+    return `<div onclick="setCurrency('${code}')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;margin-bottom:7px;cursor:pointer;background:${active?'rgba(156,116,64,0.16)':'rgba(28,26,22,0.07)'};border:1px solid ${active?'rgba(156,116,64,0.4)':'rgba(28,26,22,0.12)'}"><span style="font-size:13px;font-weight:600;color:#1C1A16">${CURRENCIES[code].symbol} &nbsp; ${CURRENCIES[code].label}</span>${active?'<span style="color:#9C7440;font-size:14px">✓</span>':''}</div>`;
   }).join('');
 }
 async function setCurrency(code){
@@ -1750,7 +1897,6 @@ async function setCurrency(code){
   if(currentUser){await sb.from('profiles').upsert({id:currentUser.id,currency:code});}
   applyCurrencyLabels();
   closeModal('modal-currency');
-  // Re-render everything that shows money
   updateDashboard();updateSpending();updateGoals();updateProfile();updateAdvisorContext();checkBudgetAlerts();
 }
 async function editIncome(){
@@ -1784,7 +1930,6 @@ function exportCSV(){
   const a=document.createElement('a');a.href=url;a.download='thrive-transactions.csv';a.click();
 }
 
-// MONTHLY SUMMARY
 function showMonthlySummary(){
   const now=new Date();
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1798,32 +1943,31 @@ function showMonthlySummary(){
   const topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
   const html=`
     <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:4px">${months[now.getMonth()]} ${now.getFullYear()}</div>
+      <div style="font-size:13px;color:rgba(28,26,22,0.6);margin-bottom:4px">${months[now.getMonth()]} ${now.getFullYear()}</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Income</div><div style="font-size:18px;font-weight:800;color:#7fff7f">${fmt(income)}</div></div>
-      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Spent</div><div style="font-size:18px;font-weight:800">${fmt(spent)}</div></div>
-      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Saved</div><div style="font-size:18px;font-weight:800;color:${saved>0?'#7fff7f':'#ff8877'}">${fmt(saved)}</div></div>
-      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Rate</div><div style="font-size:18px;font-weight:800;color:${savingsRate>=20?'#7fff7f':'#fff'}">${savingsRate}%</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10.5px;color:#1C1A16;margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Income</div><div style="font-size:18px;font-weight:800;color:#9C7440">${fmt(income)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10.5px;color:#1C1A16;margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Spent</div><div style="font-size:18px;font-weight:800">${fmt(spent)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10.5px;color:#1C1A16;margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Saved</div><div style="font-size:18px;font-weight:800;color:${saved>0?'#9C7440':'#C23B3B'}">${fmt(saved)}</div></div>
+      <div class="glass" style="padding:12px;text-align:center"><div style="font-size:10.5px;color:#1C1A16;margin-bottom:4px;letter-spacing:0.1em;text-transform:uppercase">Rate</div><div style="font-size:18px;font-weight:800;color:${savingsRate>=20?'#9C7440':'#1C1A16'}">${savingsRate}%</div></div>
     </div>
-    ${topCat?`<div class="glass" style="padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">Top spending category</div><div style="font-size:15px;font-weight:700">${getCatIcon(topCat[0])} ${esc(topCat[0])} — ${fmt(topCat[1])}</div></div>`:''}
+    ${topCat?`<div class="glass" style="padding:12px;margin-bottom:10px"><div style="font-size:11px;color:rgba(28,26,22,0.55);margin-bottom:4px">Top spending category</div><div style="font-size:15px;font-weight:700">${getCatIcon(topCat[0])} ${esc(topCat[0])} — ${fmt(topCat[1])}</div></div>`:''}
     <div class="glass" style="padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:6px">Thrive AI says</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6">${savingsRate>=30?'Outstanding month! A '+savingsRate+'% savings rate is exceptional.':savingsRate>=15?'Good progress! A '+savingsRate+'% savings rate shows strong discipline.':'This month was tough. Small changes add up — try setting a budget for your top spending category.'}</div>
+      <div style="font-size:11px;color:rgba(28,26,22,0.55);margin-bottom:6px">Thrive AI says</div>
+      <div style="font-size:13px;color:rgba(28,26,22,0.85);line-height:1.6">${savingsRate>=30?'Outstanding month! A '+savingsRate+'% savings rate is exceptional.':savingsRate>=15?'Good progress! A '+savingsRate+'% savings rate shows strong discipline.':'This month was tough. Small changes add up — try setting a budget for your top spending category.'}</div>
     </div>
-    <div style="font-size:9px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
+    <div style="font-size:10.5px;color:#1C1A16;text-align:center;letter-spacing:0.1em;text-transform:uppercase">Educational purposes only · Not financial advice</div>
   `;
   document.getElementById('monthly-summary-content').innerHTML=html;
   openModal('modal-monthly-summary');
 }
 
-// TUTORIAL — a real guided tour. Switches tabs, spotlights the ACTUAL button, and waits for a real click.
 const TUT_STEPS=[
-  {type:'info',tab:'home',title:'Welcome to Thrive AI! 👋',body:"Let's take a proper look around — this tour covers everything, including your Profile settings. This is Home, your money at a glance."},
-  {type:'info',tab:'home',title:'Your Net Balance 💰',body:"This number is the running total of every transaction you've ever logged — all income minus all expenses, added together. It's not necessarily your real bank balance (it only knows what you've told it), but it's a good pulse-check on where things stand overall."},
-  {type:'info',tab:'home',title:'Income, Spent, Saved, Transactions 📊',body:"These four cards cover THIS MONTH only. Tap any of them — they're not just for looking at, each one opens a full breakdown (e.g. tap Spent to see every expense by category)."},
-  {type:'info',tab:'home',title:'The Spending Chart 📈',body:"Switch between Daily / Weekly / Monthly views here. Tap <b>View Full Breakdown</b> below the chart for a detailed period-by-period history with every transaction listed."},
-  {type:'info',tab:'home',title:'Thrive AI Notices 💡',body:"This section automatically surfaces what matters most right now — over-budget warnings, milestone celebrations, or a nudge to add your first transaction. It updates itself as your data changes."},
+  {type:'info',tab:'home',title:'Welcome to Thrive AI',body:"Let's take a proper look around — this tour covers everything, including your Profile settings. Home is built to answer one question at a glance: how am I doing today?"},
+  {type:'info',tab:'home',title:'Available to Spend',body:"This is your total balance minus bills due in the next 7 days — a safer number to spend against than your raw balance. Tap the balance line below it any time for the full monthly breakdown."},
+  {type:'info',tab:'home',title:"Today's AI Brief",body:"A running summary of what matters right now — a bill coming up, how yesterday compared to your usual spending, anything over budget, your savings pace. It's computed instantly from your own data, no AI question spent."},
+  {type:'info',tab:'home',title:'Bills & Savings',body:"Your next few upcoming bills, and progress on whichever goal is closest to done. Tap either card to go deeper — all your bills, or the full goals list."},
+  {type:'info',tab:'home',title:'Recent Activity',body:"Your last few transactions live here. For full category breakdowns, budgets, and search, head to the Spending tab next."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-addtx',expectedModalId:'modal-add-tx',title:'Add a Transaction 💳',body:"Tap the glowing button to log a real income or expense."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-recurring',expectedModalId:'modal-add-recurring',title:'Recurring Payments 🔁',body:"Tap the glowing button to set up a payment that repeats automatically — rent, salary, subscriptions."},
   {type:'target',tab:'spend',targetSelector:'#tut-target-budget',expectedModalId:'modal-add-budget',title:'Set a Budget ⚙️',body:"Tap the glowing button to cap what you spend in a category."},
@@ -1857,9 +2001,6 @@ function clearSpotlight(){
   if(banner)banner.style.display='none';
 }
 function tutOutsideClickHandler(e){
-  // If the tutorial spotlight is active and the user clicks anything other than the
-  // highlighted target (or the tooltip itself), they've wandered off — clear the
-  // spotlight instead of letting it stay stuck on screen over whatever they open next.
   if(!tutCurrentTarget)return;
   const tip=document.getElementById('tut-spotlight');
   if(tutCurrentTarget.contains(e.target)||tip.contains(e.target))return;
@@ -1868,15 +2009,10 @@ function tutOutsideClickHandler(e){
 function renderTutorialStep(){
   const step=TUT_STEPS[tutStep];
   clearSpotlight();
-  // Defensive cleanup: a step transition can be triggered by an app action that
-  // itself opens a new modal (e.g. tapping "+ Add Recurring" closes the Recurring
-  // list modal and opens the Add Recurring form in the same click). Without this,
-  // the next tutorial step would render its spotlight on top of that leftover
-  // open modal instead of the actual page underneath.
   document.querySelectorAll('.modal-overlay.active').forEach(o=>o.classList.remove('active'));
   switchTab(step.tab);
   if(step.type==='info'){
-    document.getElementById('tut-content').innerHTML=`<div style="text-align:center;margin-bottom:6px"><div style="font-family:'Lora',serif;font-size:19px;color:#fff;margin-bottom:10px">${step.title}</div><div style="font-size:13px;color:rgba(255,255,255,0.78);line-height:1.7">${step.body}</div></div>`;
+    document.getElementById('tut-content').innerHTML=`<div style="text-align:center;margin-bottom:6px"><div style="font-family:'Lora',serif;font-size:19px;color:#1C1A16;margin-bottom:10px">${step.title}</div><div style="font-size:13px;color:rgba(28,26,22,0.78);line-height:1.7">${step.body}</div></div>`;
     document.getElementById('tut-dots').innerHTML=TUT_STEPS.map((s,i)=>`<div class="onboard-dot ${i===tutStep?'active':''}"></div>`).join('');
     document.getElementById('tut-back-btn').style.visibility=tutStep===0?'hidden':'visible';
     const nextBtn=document.getElementById('tut-next-btn');
@@ -1885,8 +2021,6 @@ function renderTutorialStep(){
     document.getElementById('tut-skip-step').style.display='none';
     openModal('modal-tutorial');
   } else if(step.type==='banner'){
-    // Non-blocking: unlike the modal or floating spotlight, this never covers the
-    // real feature underneath, so the person can actually use it while it's showing.
     document.getElementById('tut-advisor-banner').style.display='block';
   } else {
     closeModal('modal-tutorial');
@@ -1895,7 +2029,7 @@ function renderTutorialStep(){
 }
 function spotlightTarget(step){
   const el=document.querySelector(step.targetSelector);
-  if(!el){tutorialNext();return;} // fallback: skip gracefully if the element isn't on screen
+  if(!el){tutorialNext();return;}
   el.classList.add('tut-glow');
   tutCurrentTarget=el;
   const tip=document.getElementById('tut-spotlight');
@@ -1910,11 +2044,6 @@ function spotlightTarget(step){
   left=Math.max(10,Math.min(left,window.innerWidth-tipRect.width-10));
   tip.style.top=top+'px';
   tip.style.left=left+'px';
-  // manualAdvance steps (e.g. the Advisor step, where the person needs time to
-  // read an AI reply) skip this auto-advance entirely. The spotlight tooltip stays
-  // on screen with its own Back / Skip this / End tour links, so the person can
-  // freely use the real feature underneath and move the tour forward themselves
-  // whenever they're ready — instead of being yanked to the next step mid-read.
   if(!step.manualAdvance){
     el.addEventListener('click',()=>tutorialTargetClicked(step),{once:true});
   }
@@ -1950,7 +2079,6 @@ function closeTutorial(){
   switchTab('home');
 }
 
-// FEEDBACK
 function openFeedback(){
   document.getElementById('feedback-message').value='';
   document.getElementById('feedback-success').style.display='none';
@@ -1966,7 +2094,6 @@ async function submitFeedback(){
   setTimeout(()=>{closeModal('modal-feedback');},1600);
 }
 
-// TAB NAVIGATION
 function switchTab(tab){
   const tabs=['home','spend','goals','advisor','profile','plans','statdetail'];
   tabs.forEach(t=>{
@@ -1981,7 +2108,6 @@ function switchTab(tab){
   if(activeNav)activeNav.classList.add('active');
 }
 
-// STAT DETAIL VIEWS
 function closeStatDetail(){switchTab('home');document.getElementById('nav-home').classList.add('active');}
 function openStatDetail(type){
   const now=new Date();
@@ -1992,9 +2118,9 @@ function openStatDetail(type){
 
   if(type==='count'){
     title='All Transactions';sub=`${userTransactions.length} total`;
-    if(userTransactions.length===0){content=`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(255,255,255,0.55)">No transactions yet.</div>`;}
+    if(userTransactions.length===0){content=`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(28,26,22,0.55)">No transactions yet.</div>`;}
     else{
-      content=`<div class="tx-card glass">`+userTransactions.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#7fff7f':'#fff'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`;
+      content=`<div class="tx-card glass">`+userTransactions.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Other')}</div></div><div class="tx-amount" style="color:${t.amount>0?'#9C7440':'#1C1A16'}">${t.amount>0?'+':'−'}${fmt(t.amount)}</div></div>`).join('')+`</div>`;
     }
   }
 
@@ -2005,11 +2131,11 @@ function openStatDetail(type){
     const byCat={};
     spentTxns.forEach(t=>{const cat=t.category||'Other';byCat[cat]=(byCat[cat]||0)+Math.abs(parseFloat(t.amount));});
     const entries=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-    if(entries.length===0){content=`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(255,255,255,0.55)">No spending recorded this month.</div>`;}
+    if(entries.length===0){content=`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(28,26,22,0.55)">No spending recorded this month.</div>`;}
     else{
       content=`<div class="section-label">By Category</div>`+entries.map(([cat,amt])=>{
         const pct=total>0?Math.round((amt/total)*100):0;
-        return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${esc(cat)}</div></div><div class="cat-amount">${fmt(amt)}</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:rgba(255,150,80,0.6)"></div></div><div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:4px">${pct}% of spending</div></div>`;
+        return `<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">${getCatIcon(cat)}</div><div class="cat-name">${esc(cat)}</div></div><div class="cat-amount">${fmt(amt)}</div></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:rgba(255,150,80,0.6)"></div></div><div style="font-size:10px;color:rgba(28,26,22,0.45);margin-top:4px">${pct}% of spending</div></div>`;
       }).join('');
     }
   }
@@ -2020,11 +2146,11 @@ function openStatDetail(type){
     const total=monthlyIncome>0?monthlyIncome:txTotal;
     title='Income This Month';sub=`${fmt(total)} · ${monthLabel}`;
     let body='';
-    if(monthlyIncome>0){body+=`<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">💰</div><div class="cat-name">Set Monthly Income</div></div><div class="cat-amount" style="color:#7fff7f">${fmt(monthlyIncome)}</div></div></div>`;}
+    if(monthlyIncome>0){body+=`<div class="cat-card glass"><div class="cat-header"><div class="cat-left"><div class="cat-icon-box">💰</div><div class="cat-name">Set Monthly Income</div></div><div class="cat-amount" style="color:#9C7440">${fmt(monthlyIncome)}</div></div></div>`;}
     if(incTxns.length>0){
-      body+=`<div class="section-label" style="margin-top:8px">Income Transactions</div><div class="tx-card glass">`+incTxns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Income')}</div></div><div class="tx-amount" style="color:#7fff7f">+${fmt(t.amount)}</div></div>`).join('')+`</div>`;
+      body+=`<div class="section-label" style="margin-top:8px">Income Transactions</div><div class="tx-card glass">`+incTxns.map(t=>`<div class="tx-row"><div class="tx-icon">${getCatIcon(t.category)}</div><div style="flex:1;min-width:0"><div class="tx-name">${esc(t.name)}</div><div class="tx-date">${txDate(t).toLocaleDateString()} · ${esc(t.category||'Income')}</div></div><div class="tx-amount" style="color:#9C7440">+${fmt(t.amount)}</div></div>`).join('')+`</div>`;
     }
-    content=body||`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(255,255,255,0.55)">No income recorded this month. Set your monthly income in Profile.</div>`;
+    content=body||`<div class="glass" style="padding:18px;text-align:center;font-size:13px;color:rgba(28,26,22,0.55)">No income recorded this month. Set your monthly income in Profile.</div>`;
   }
 
   else if(type==='saved'){
@@ -2033,7 +2159,7 @@ function openStatDetail(type){
     const saved=income-spent;
     const rate=income>0?Math.round((saved/income)*100):0;
     title='Saved This Month';sub=`${fmt(saved)} · ${rate}% savings rate`;
-    content=`<div class="glass" style="padding:16px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.6);font-size:13px">Income</span><span style="font-weight:700;color:#7fff7f">${fmt(income)}</span></div><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.6);font-size:13px">Spent</span><span style="font-weight:700">${fmt(spent)}</span></div><div style="height:1px;background:rgba(255,255,255,0.12);margin:8px 0"></div><div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.85);font-size:14px;font-weight:700">Saved</span><span style="font-weight:800;color:${saved>0?'#7fff7f':'#ff8877'}">${fmt(saved)}</span></div></div>`;
+    content=`<div class="glass" style="padding:16px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(28,26,22,0.6);font-size:13px">Income</span><span style="font-weight:700;color:#9C7440">${fmt(income)}</span></div><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(28,26,22,0.6);font-size:13px">Spent</span><span style="font-weight:700">${fmt(spent)}</span></div><div style="height:1px;background:rgba(28,26,22,0.12);margin:8px 0"></div><div style="display:flex;justify-content:space-between"><span style="color:rgba(28,26,22,0.85);font-size:14px;font-weight:700">Saved</span><span style="font-weight:800;color:${saved>0?'#9C7440':'#C23B3B'}">${fmt(saved)}</span></div></div>`;
     if(userGoals.length>0){
       content+=`<div class="section-label">Toward Your Goals</div>`+userGoals.map(g=>{
         const pct=Math.min(Math.round((parseFloat(g.current)/parseFloat(g.target))*100),100);
@@ -2049,7 +2175,6 @@ function openStatDetail(type){
   document.getElementById('nav-home').classList.add('active');
 }
 
-// AI ADVISOR
 let aiContext='';
 function updateAdvisorContext(){
   const now=new Date();
@@ -2088,7 +2213,7 @@ Rules for this block:
 - The block is invisible to the user (the app strips it out and shows a confirmation card instead), so never reference it or mention "logging" or "the block" in your visible reply — just answer naturally.`;
 async function clearChat(){
   chatHistory=[];
-  document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;
+  document.getElementById('messages').innerHTML=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Chat cleared. How can I help you today?</div></div></div>`;
   if(currentUser)await sb.from('chat_messages').delete().eq('user_id',currentUser.id);
 }
 async function loadChatHistory(){
@@ -2096,11 +2221,8 @@ async function loadChatHistory(){
   const {data:msgs}=await sb.from('chat_messages').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true}).limit(50);
   const box=document.getElementById('messages');
   if(!msgs||!msgs.length){
-    // No saved history for this account — reset to the default welcome message.
-    // Without this, a previous account's messages (still sitting in memory/DOM from
-    // an earlier session on this same browser) would stay visible to whoever's now logged in.
     chatHistory=[];
-    box.innerHTML=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Hello! I'm Thrive AI, your personal finance coach. Add some transactions and I'll give you personalised insights based on your real numbers. I can make mistakes, so please double-check anything important. What would you like to know?</div></div></div>`;
+    box.innerHTML=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">Hello! I'm Thrive AI, your personal finance coach. Add some transactions and I'll give you personalised insights based on your real numbers. I can make mistakes, so please double-check anything important. What would you like to know?</div></div></div>`;
     return;
   }
   chatHistory=msgs.map(m=>({role:m.role,content:m.content}));
@@ -2108,7 +2230,7 @@ async function loadChatHistory(){
     if(m.role==='user'){
       return `<div class="msg-user"><div class="msg-bubble-user"><div class="msg-text-user">${esc(m.content)}</div></div></div>`;
     }
-    return `<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(m.content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+    return `<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(m.content).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
   }).join('');
   box.scrollTop=box.scrollHeight;
 }
@@ -2121,10 +2243,6 @@ function updateAdvisorStatus(){
   el.textContent=`Active · ${left} of ${FREE_AI_LIMIT} free questions left`;
 }
 function recordAiQuestionUsed(){
-  // The server (api/chat.js) is now the source of truth for the actual count —
-  // it increments and saves this to Supabase itself after a successful reply.
-  // This just keeps the on-screen "X of 3 free questions left" text in sync
-  // immediately, without a second write racing against the server's.
   if(isPro)return;
   if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
   aiQuestionsCount++;
@@ -2134,13 +2252,12 @@ async function sendMessage(){
   const input=document.getElementById('chat-input');
   const text=input.value.trim();if(!text)return;
 
-  // Enforce the free-tier monthly limit BEFORE calling the API, so it never costs a cent past the cap
   if(!isPro){
     if(aiQuestionsMonth!==currentMonthKey()){aiQuestionsCount=0;aiQuestionsMonth=currentMonthKey();}
     if(aiQuestionsCount>=FREE_AI_LIMIT){
       input.value='';
       const msgs=document.getElementById('messages');
-      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">You've used all ${FREE_AI_LIMIT} free questions this month. Your questions reset at the start of next month, or you can <span style="text-decoration:underline;cursor:pointer;font-weight:700" onclick="switchTab('plans')">upgrade to Pro</span> for unlimited conversations.<br><br>This is educational information, not financial advice.</div></div></div>`;
+      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">You've used all ${FREE_AI_LIMIT} free questions this month. Your questions reset at the start of next month, or you can <span style="text-decoration:underline;cursor:pointer;font-weight:700" onclick="switchTab('plans')">upgrade to Pro</span> for unlimited conversations.<br><br>This is educational information, not financial advice.</div></div></div>`;
       msgs.scrollTop=msgs.scrollHeight;
       return;
     }
@@ -2152,10 +2269,9 @@ async function sendMessage(){
   chatHistory.push({role:'user',content:text});
   if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'user',content:text}).then(({error})=>{if(error)console.error('Failed to save chat message:',error);});
   const tid='t'+Date.now();
-  msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
+  msgs.innerHTML+=`<div id="${tid}" class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="typing"><div class="typing-dot" style="animation-delay:0s"></div><div class="typing-dot" style="animation-delay:.2s"></div><div class="typing-dot" style="animation-delay:.4s"></div></div></div></div>`;
   msgs.scrollTop=msgs.scrollHeight;
 
-  // Abort the request after 20s so the typing dots never spin forever
   const controller=new AbortController();
   const timeoutId=setTimeout(()=>controller.abort(),20000);
 
@@ -2170,12 +2286,11 @@ async function sendMessage(){
 
     const data=await res.json();
 
-    // If the server returned an error, SHOW it instead of pretending it worked
     if(!res.ok){
       console.error('Advisor API error:',res.status,data);
       const tEl=document.getElementById(tid);if(tEl)tEl.remove();
       const errText=data.error||'Something went wrong. Please try again.';
-      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(errText)}<br><br>This is educational information, not financial advice.</div></div></div>`;
+      msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(errText)}<br><br>This is educational information, not financial advice.</div></div></div>`;
       msgs.scrollTop=msgs.scrollHeight;
       return;
     }
@@ -2183,7 +2298,6 @@ async function sendMessage(){
     let reply=data.content?.map(b=>b.text||'').join('')||'Let me think about that…';
     const tEl=document.getElementById(tid);if(tEl)tEl.remove();
 
-    // Pull out the hidden data-intake block, if the AI detected loggable numbers, and never show the raw JSON to the user
     let detectedActions=[];
     const actionMatch=reply.match(/<THRIVE_ACTIONS>([\s\S]*?)<\/THRIVE_ACTIONS>/);
     if(actionMatch){
@@ -2193,9 +2307,9 @@ async function sendMessage(){
 
     chatHistory.push({role:'assistant',content:reply});
     if(currentUser)sb.from('chat_messages').insert({user_id:currentUser.id,role:'assistant',content:reply}).then(({error})=>{if(error)console.error('Failed to save chat message:',error);});
-    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(reply).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
+    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${esc(reply).replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div></div>`;
     if(detectedActions.length)renderIntakeCard(detectedActions,msgs);
-    await recordAiQuestionUsed(); // only counts against the limit on a successful reply
+    await recordAiQuestionUsed();
   }catch(err){
     clearTimeout(timeoutId);
     console.error('Advisor fetch failed:',err);
@@ -2203,13 +2317,12 @@ async function sendMessage(){
     const m=err.name==='AbortError'
       ?'That took too long to respond. Please try again in a moment.'
       :'Connection issue — please check your internet and try again.';
-    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar">🌿</div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${m}<br><br>This is educational information, not financial advice.</div></div></div>`;
+    msgs.innerHTML+=`<div class="msg-sage"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="msg-bubble-sage glass"><div class="msg-label">Thrive AI</div><div class="msg-text-sage">${m}<br><br>This is educational information, not financial advice.</div></div></div>`;
   }
   msgs.scrollTop=msgs.scrollHeight;
 }
 function sendQuick(btn){document.getElementById('chat-input').value=btn.textContent;sendMessage();}
 
-// AUTO DATA-INTAKE — the Advisor can detect stated numbers, but NEVER commits without explicit confirmation
 let intakeStore={};
 function renderIntakeCard(actions,msgs){
   const cardId='intake-'+Date.now();
@@ -2223,13 +2336,13 @@ function renderIntakeCard(actions,msgs){
     else return '';
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
       <input type="checkbox" class="intake-check" data-idx="${i}" checked style="width:15px;height:15px;flex-shrink:0">
-      <span style="flex:1;font-size:12px;color:#fff">${label}</span>
-      <span style="font-size:12px;color:rgba(255,255,255,0.6)">${curSym()}</span>
-      <input type="number" class="intake-amount" data-idx="${i}" value="${amount}" style="width:80px;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;font-size:12px;text-align:right">
+      <span style="flex:1;font-size:12px;color:#1C1A16">${label}</span>
+      <span style="font-size:12px;color:rgba(28,26,22,0.6)">${curSym()}</span>
+      <input type="number" class="intake-amount" data-idx="${i}" value="${amount}" style="width:80px;padding:4px 6px;border-radius:8px;border:1px solid rgba(28,26,22,0.25);background:rgba(28,26,22,0.1);color:#1C1A16;font-size:12px;text-align:right">
     </div>`;
   }).join('');
-  const html=`<div class="msg-sage" id="${cardId}"><div class="msg-avatar">🌿</div><div class="glass" style="padding:13px 15px;max-width:82%;border-radius:4px 16px 16px 16px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px">I noticed some numbers — check the amounts, fix anything wrong, then confirm</div>
+  const html=`<div class="msg-sage" id="${cardId}"><div class="msg-avatar"><div class="brand-mark"></div></div><div class="glass" style="padding:13px 15px;max-width:82%;border-radius:4px 16px 16px 16px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(28,26,22,0.6);margin-bottom:8px">I noticed some numbers — check the amounts, fix anything wrong, then confirm</div>
     ${rows}
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn-small btn-blue" style="flex:1" onclick="confirmIntake('${cardId}')">Add Selected ✓</button>
@@ -2254,8 +2367,6 @@ async function confirmIntake(cardId){
     const idx=c.dataset.idx;
     const a={...actions[parseInt(idx)]};
     const editedAmount=amountByIdx[idx];
-    // Same safety rule as the manual Add Transaction/Goal/Recurring forms: block zero/invalid amounts.
-    // monthly_income is the one exception — explicitly setting it to 0 is a valid, intentional action.
     if(a.type!=='monthly_income' && (!editedAmount || editedAmount<=0)){skipped++;return;}
     if(a.type==='goal')a.target=editedAmount;else a.amount=editedAmount;
     selected.push(a);
@@ -2270,9 +2381,6 @@ async function confirmIntake(cardId){
         const amt=a.kind==='expense'?-Math.abs(parseFloat(a.amount)):Math.abs(parseFloat(a.amount));
         await sb.from('transactions').insert({user_id:currentUser.id,name:a.name,amount:amt,category:a.category||'Other',date:new Date().toISOString().split('T')[0],currency:userCurrency});
       } else if(a.type==='goal'){
-        // Track additions made so far THIS batch, not just the stale array length from
-        // before the loop started — otherwise several goals detected in one AI message
-        // could all slip through the free-tier cap together.
         if(!isPro && (userGoals.length+goalsAddedThisBatch)>=2){skipped++;continue;}
         await sb.from('goals').insert({user_id:currentUser.id,name:a.name,target:parseFloat(a.target),current:parseFloat(a.current)||0});
         goalsAddedThisBatch++;
@@ -2286,7 +2394,7 @@ async function confirmIntake(cardId){
   }
   delete intakeStore[cardId];
   const skipNote=skipped>0?` (skipped ${skipped} item${skipped>1?'s':''} — check amounts entered or your plan's limits)`:'';
-  card.innerHTML=`<div class="msg-avatar">🌿</div><div class="glass" style="padding:12px 15px;max-width:82%;border-radius:4px 16px 16px 16px"><div style="font-size:12px;color:#7fff7f;font-weight:700">✓ Added to your account${skipNote}</div></div>`;
+  card.innerHTML=`<div class="msg-avatar"><div class="brand-mark"></div></div><div class="glass" style="padding:12px 15px;max-width:82%;border-radius:4px 16px 16px 16px"><div style="font-size:12px;color:#9C7440;font-weight:700">✓ Added to your account${skipNote}</div></div>`;
   await loadUserData();
 }
 function dismissIntake(cardId){
@@ -2295,7 +2403,6 @@ function dismissIntake(cardId){
   if(card)card.remove();
 }
 
-// SESSION CHECK
 window.addEventListener('load',async()=>{
   const {data:{session}}=await sb.auth.getSession();
   if(session){
@@ -2309,7 +2416,6 @@ window.addEventListener('load',async()=>{
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});});
 
-// Completes the "forgot password" loop: when the user returns via the reset email link
 sb.auth.onAuthStateChange(async(event)=>{
   if(event==='PASSWORD_RECOVERY'){
     const np=prompt('Set a new password (at least 6 characters):');
