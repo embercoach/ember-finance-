@@ -969,8 +969,17 @@ function show(id){
   document.getElementById('app-bg').style.display=isApp?'block':'none';
 }
 function openModal(id){document.getElementById(id).classList.add('active');const inp=document.querySelector(`#${id} input[type="date"]`);if(inp&&!inp.value)inp.value=new Date().toISOString().split('T')[0];}
+let tutSuppressAdvance=false;
 function closeModal(id){
   document.getElementById(id).classList.remove('active');
+  if(tutSuppressAdvance){
+    // A free-tier cap just blocked this action — the modal is closing as part
+    // of that rejection, not because the tutorial's task was actually completed.
+    // Pause the tutorial cleanly here instead of pretending the step succeeded.
+    tutSuppressAdvance=false;
+    if(tutActionPending){tutActionPending=null;clearSpotlight();}
+    return;
+  }
   if(tutActionPending && id===tutActionPending){
     tutActionPending=null;
     tutStep++;
@@ -1505,6 +1514,7 @@ async function addRecurring(){
   if(!name||!amount){alert('Please fill in name and amount.');return;}
   if(!isPro && userRecurring.length>=2){
     alert("Free accounts can have up to 2 recurring items. Upgrade to Pro for unlimited recurring payments.");
+    tutSuppressAdvance=true;
     closeModal('modal-add-recurring');
     switchTab('plans');
     return;
@@ -1657,6 +1667,7 @@ async function addGoal(){
   // wall quickly, matching the same pattern used for the AI question limit.
   if(!isPro && userGoals.length>=2){
     alert("Free accounts can have up to 2 active goals. Upgrade to Pro for unlimited goals.");
+    tutSuppressAdvance=true;
     closeModal('modal-add-goal');
     switchTab('plans');
     return;
@@ -1695,6 +1706,7 @@ async function saveBudget(){
   // editing an existing budget's amount should always be allowed.
   if(!isPro && !existingKey && Object.keys(userBudgets).length>=2){
     alert("Free accounts can have up to 2 budget categories. Upgrade to Pro for unlimited budgets.");
+    tutSuppressAdvance=true;
     closeModal('modal-add-budget');
     switchTab('plans');
     return;
